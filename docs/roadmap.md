@@ -17,16 +17,17 @@ Cada fase termina com a aplicação funcionando e o CI verde. Áreas futuras apa
 - Imagens e tabelas em questões (Supabase Storage).
 - Banco de questões com licença para simulados.
 
-## Fase 4 — Atendimento e administração
-- Formulário de suporte com protocolo, anexos verificados (tipo e tamanho, bucket privado), e-mail ao admin e confirmação ao usuário via Resend — só exibe "enviado" com confirmação do provedor.
-- Painel administrativo com MFA obrigatório, trilha de auditoria e confirmação de ações destrutivas.
-- Monitoramento de erros (Sentry) e disponibilidade.
+## Fase 4 — Atendimento e administração (concluída)
+- `suporte_solicitacoes` + bucket privado `suporte`; envio via Resend com status real de cada e-mail.
+- MFA (aal2) exigido no banco para `is_editor()` e `is_admin()`; `auditoria`, `erros_app`, `config_plataforma`, `notificacoes`.
+- Rotinas: `/api/cron/verificar-links` e `/api/cron/notificacoes`; monitoramento em `/api/saude`.
 
 ## Fase 5 — Expansão
 - Biblioteca colaborativa com licença por item, formação continuada, núcleo de inclusão, planos profissional e institucional com provedor de pagamento.
 
 ## Rotina de manutenção
+- **Diário**: olhar /admin (atendimentos abertos, concursos a verificar, links fora do ar, falhas).
 - **Semanal**: revisar o resultado do `npm audit` no CI; aplicar atualizações de segurança do Next.js e do Supabase.
-- **Mensal**: conferir backups do Supabase (o plano gratuito não tem backup diário — avaliar o plano pago antes de abrir ao público); rodar `select public.purge_old_security_events();` ou agendá-lo com `pg_cron`.
+- **Mensal**: conferir backups do Supabase (o plano gratuito não tem backup diário — avaliar o plano pago antes de abrir ao público); rodar `select public.purge_old_security_events();` (falhas técnicas são limpas pela rotina de notificações) ou agendar com `pg_cron`.
 - **A cada mudança de política**: subir a versão em `TERMS_VERSION` (`src/lib/form-state.ts`) e avisar os usuários.
 - **Antes de publicar**: preencher os campos entre colchetes nas páginas legais e submetê-las a revisão jurídica.

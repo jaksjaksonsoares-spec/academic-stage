@@ -6,6 +6,7 @@ Fases concluídas:
 
 - **Fase 1 — Fundação**: identidade visual, navegação, banco com segurança por linha, autenticação completa, painel do usuário e direitos LGPD (exportar e excluir dados).
 - **Fase 2 — Ferramentas essenciais**: concursos com verificação na fonte oficial, links úteis com checagem diária, planos de aula, atividades e avaliações com exportação para PDF e Word.
+- **Fase 4 — Atendimento e administração**: suporte com protocolo e e-mail, painel administrativo com verificação em dois fatores, auditoria, notificações no site e por e-mail, registro de falhas e rota de saúde.
 - **Fase 3 — Inteligência e personalização**: central de editais (PDF ou link, com páginas citadas), planos de estudo com revisões espaçadas, flashcards, assistente pedagógico com IA e recomendações de concursos pela região.
 
 ## Arquitetura
@@ -51,7 +52,7 @@ Sem Supabase configurado o site abre normalmente; as telas de conta mostram que 
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (região **South America (São Paulo)**).
 2. **SQL Editor** → execute, nesta ordem, os arquivos de `supabase/migrations/`:
-   `20261012000000_fundacao.sql`, `20261012010000_ferramentas.sql`, `20261012020000_busca_concursos.sql`, `20261012030000_inteligencia.sql`.
+   `20261012000000_fundacao.sql`, `20261012010000_ferramentas.sql`, `20261012020000_busca_concursos.sql`, `20261012030000_inteligencia.sql`, `20261012040000_atendimento_admin.sql`.
    A última também cria o bucket privado `editais` no Storage, usado só durante a análise (o PDF é apagado em seguida).
    (Ou, com a CLI: `supabase link` e `supabase db push`.)
 3. **Project Settings → API**: copie *Project URL*, *anon key* e *service_role key* para as variáveis de ambiente.
@@ -64,16 +65,19 @@ Sem Supabase configurado o site abre normalmente; as telas de conta mostram que 
    - *Reset password*: `{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=recovery`
 7. **E-mail de produção**: o servidor de e-mail padrão do Supabase tem limite baixo de envios e é só para testes. Antes de abrir ao público, configure SMTP próprio em **Authentication → SMTP Settings** (ex.: Resend), com SPF, DKIM e DMARC no seu domínio.
 
-### Dar papel de editor ou administrador
+### Primeiro administrador
 
-No SQL Editor (nunca pelo site):
+1. Crie sua conta pelo site e confirme o e-mail.
+2. No SQL Editor do Supabase (só esta vez — depois, use o painel):
+   ```sql
+   insert into public.user_roles (user_id, role)
+   select id, 'admin' from auth.users where email = 'SEU-EMAIL';
+   ```
+3. Entre no site e abra **/admin**. Você será levado a cadastrar um aplicativo autenticador (Google Authenticator, Microsoft Authenticator, 1Password…).
+   O TOTP vem ativado por padrão no Supabase (**Authentication → Multi-Factor**); se estiver desligado, ative.
+4. Pronto: novos editores e administradores são nomeados em **/admin/usuarios**, com registro na auditoria.
 
-```sql
-insert into public.user_roles (user_id, role)
-select id, 'admin' from auth.users where email = 'SEU-EMAIL';   -- ou 'editor'
-```
-
-Editores e administradores acessam **/editor/concursos** para cadastrar concursos. O painel administrativo completo chega na fase 4.
+**Verificação em dois fatores é obrigatória** para editores e administradores, e a regra está no banco (`aal2` no token): sem o segundo fator, nenhuma escrita administrativa passa, mesmo que alguém tente pela API.
 
 ### Cadastrar concursos
 
@@ -90,7 +94,30 @@ Editores e administradores acessam **/editor/concursos** para cadastrar concurso
 4. Atualize `NEXT_PUBLIC_SITE_URL` e as URLs do Supabase (passo 4 acima) com o domínio final.
 5. Para ativar a IA, cadastre `ANTHROPIC_API_KEY` (crie em [console.anthropic.com](https://console.anthropic.com)). Opcional: `AI_MODEL` (padrão `claude-sonnet-5-5`). Sem a chave, o assistente e a análise de edital com IA aparecem como “pendentes de configuração”; a leitura de edital por palavras-chave funciona sem ela.
    A análise com IA de editais longos pode levar perto de um minuto: no plano gratuito da Vercel, confira o limite de duração das funções.
-6. Cadastre `CRON_SECRET` (gere com `openssl rand -hex 32`). O `vercel.json` agenda a verificação diária dos links úteis às 9h UTC; a Vercel envia o segredo automaticamente.
+6. Cadastre `CRON_SECRET` (gere com `openssl rand -hex 32`). O `vercel.json` agenda duas rotinas diárias: verificação dos links úteis (9h UTC) e notificações (10h UTC, 7h de Brasília). A Vercel envia o segredo automaticamente.
+7. Cadastre `FORM_SECRET` (outro `openssl rand -hex 32`) para o antispam do formulário de suporte.
+
+## Configurar domínio e e-mail
+
+O atendimento e os avisos usam a [Resend](https://resend.com). Sem ela, as solicitações continuam sendo registradas e aparecem no painel, mas nenhum e-mail sai — e o site diz isso claramente.
+
+1. Na Resend, adicione o seu domínio (ex.: `seudominio.com.br`) em **Domains**.
+2. No painel de DNS do domínio, crie os registros que a Resend mostrar:
+   - **SPF** — registro TXT (ou MX + TXT no subdomínio de envio) autorizando a Resend a enviar pelo domínio.
+   - **DKIM** — registro TXT com a chave pública de assinatura.
+   - **DMARC** — registro TXT em `_dmarc.seudominio.com.br`. Comece com `v=DMARC1; p=none; rua=mailto:SEU-EMAIL` e, depois de algumas semanas sem problemas, passe para `p=quarantine`.
+3. Espere a Resend marcar o domínio como verificado.
+4. Na Vercel, cadastre:
+   - `RESEND_API_KEY` — chave criada na Resend
+   - `EMAIL_FROM` — ex.: `AcademiC Stage <nao-responda@seudominio.com.br>`
+   - `SUPPORT_EMAIL_TO` — **o seu e-mail de atendimento**, para onde vão as solicitações
+5. Recomendado: use a mesma conta Resend como **SMTP do Supabase** (Authentication → SMTP Settings), para que os e-mails de confirmação de conta e de senha saiam do seu domínio e sem o limite do servidor de testes do Supabase.
+
+## Monitoramento
+
+- **/api/saude** responde `200` quando o banco está acessível e `503` quando não. Cadastre-a num monitor gratuito (UptimeRobot, Better Stack) com alerta por e-mail.
+- Falhas do servidor ficam em **/admin/erros** por 30 dias (rota, mensagem e código digest — sem dados pessoais).
+- Ações administrativas ficam em **/admin/auditoria**.
 
 ## Testes
 
@@ -105,6 +132,8 @@ Editores e administradores acessam **/editor/concursos** para cadastrar concurso
 | Estudos, flashcards e IA: dono de cada registro, cota de IA que não pode ser apagada, arquivos só na própria pasta | `tests/sql/fase3_test.sql` | Postgres 16 com Storage simulado |
 | Leitura de PDF real, análise de edital com páginas, cronograma, revisões, Leitner, dados pessoais, calendário .ics | `tests/fase3.test.ts` | Vitest |
 | Chamada à IA (cabeçalhos, streaming, erros), seções com páginas citadas, proteção contra SSRF | `tests/ia.test.ts` | Vitest com API simulada |
+| MFA obrigatório no banco, papéis, auditoria, suporte, configurações, notificações e lista de e-mails restrita | `tests/sql/fase4_test.sql` | Postgres 16 |
+| Protocolo, anexos pelo conteúdo, antispam, e-mail só “enviado” com id do provedor, escape de HTML, regras de notificação | `tests/fase4.test.ts` | Vitest com provedor simulado |
 | Redirecionamento seguro, limitador, rotas protegidas, CSP | `tests/security.test.ts` | Vitest |
 | Busca global e mapa de áreas | `tests/search.test.ts` | Vitest |
 | Validação de formulários | `tests/validation.test.ts` | Vitest |
@@ -156,15 +185,25 @@ Editores e administradores acessam **/editor/concursos** para cadastrar concurso
 - Mapas conceituais e resumos editáveis específicos de estudo (resumos podem ser feitos em documentos de texto)
 - O assistente não consulta a internet: não cita fontes externas atualizadas
 
+**Concluído na Fase 4**
+- Suporte: formulário com categorias, anexos (PDF/PNG/JPG verificados pelo conteúdo, até 4 MB), consentimento, campo invisível e tempo mínimo contra robôs, limite por origem e por e-mail, protocolo `AS-AAAAMMDD-XXXXXX`, e-mail à equipe e confirmação ao solicitante, registro de data e da situação de cada envio, acompanhamento em “Minhas solicitações”, FAQ e política de atendimento
+- Painel administrativo (/admin) com verificação em dois fatores: visão geral com métricas e serviços pendentes, atendimento com resposta por e-mail e anexos por link de 60 segundos, usuários e papéis, concursos que precisam de nova verificação, links úteis, falhas técnicas, auditoria e limites de IA por plano
+- Notificações: avisos no site (sino no cabeçalho) e resumo por e-mail para prazos de inscrição (3 dias), provas (7 dias) e sessões de estudo do dia, conforme tópicos e frequência escolhidos
+- Registro automático de falhas do servidor e rota de saúde
+
 **Depende de credenciais ou serviços externos**
 - Supabase (contas e banco) — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Exclusão automática de conta e verificação de links — `SUPABASE_SERVICE_ROLE_KEY`
 - Rotina diária dos links — `CRON_SECRET` + Vercel Cron
 - Assistente e análise de edital com IA — `ANTHROPIC_API_KEY`
+- E-mails do atendimento e das notificações — `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL_TO` e domínio verificado (SPF, DKIM, DMARC)
+- Antispam do formulário — `FORM_SECRET`
 - E-mails de confirmação em volume — SMTP próprio no Supabase
 - Envio das notificações por e-mail — fase 4 (preferências já são salvas)
 
 **Limitações conhecidas**
+- O plano gratuito da Vercel permite até 2 rotinas agendadas diárias — exatamente as duas usadas.
+- Não há verificação humana (captcha). Se o formulário receber spam mesmo com as proteções atuais, adicione Cloudflare Turnstile.
 - O limitador de tentativas é por instância do servidor; o Supabase Auth aplica seus próprios limites globais. Para limite global, trocar por Upstash Redis (interface pronta em `src/lib/rate-limit.ts`).
 - O nonce da CSP torna as páginas renderizadas por requisição (sem cache estático). Aceitável na fase 1; reavaliar quando houver tráfego.
 
