@@ -49,8 +49,25 @@ jobs:
       - name: Testes unitários
         run: npm test
       - name: Build de produção (inclui verificação de tipos)
-        run: npm run build
+        shell: bash
+        run: |
+          set +e
+          npm run build 2>&1 | tee build.log
+          status=${PIPESTATUS[0]}
+          if [ $status -ne 0 ]; then
+            # Publica as linhas de erro como anotações (visíveis na aba Checks).
+            grep -n -i -E "error|failed|cannot|not assignable|does not exist|module not found" build.log | head -20 | while IFS= read -r line; do
+              echo "::error title=build::${line//%/%25}"
+            done
+          fi
+          exit $status
       - name: Verificação de tipos completa (inclui testes)
-        run: npm run typecheck
+        shell: bash
+        run: |
+          set +e
+          npx tsc --noEmit 2>&1 | tee tsc.log
+          status=${PIPESTATUS[0]}
+          grep -E "error TS" tsc.log | head -20 | while IFS= read -r line; do echo "::error title=tsc::$line"; done
+          exit $status
       - name: Auditoria de dependências (alto risco)
         run: npm audit --omit=dev --audit-level=high
