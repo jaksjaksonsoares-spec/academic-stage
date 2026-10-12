@@ -2,7 +2,10 @@
 
 Plataforma para professores e profissionais da educação no Brasil: concursos com fonte oficial, ferramentas pedagógicas e desenvolvimento profissional.
 
-Este repositório contém a **Fase 1 — Fundação**: identidade visual, navegação, banco de dados com segurança por linha, autenticação completa, painel do usuário e direitos LGPD (exportar e excluir dados).
+Fases concluídas:
+
+- **Fase 1 — Fundação**: identidade visual, navegação, banco com segurança por linha, autenticação completa, painel do usuário e direitos LGPD (exportar e excluir dados).
+- **Fase 2 — Ferramentas essenciais**: concursos com verificação na fonte oficial, links úteis com checagem diária, planos de aula, atividades e avaliações com exportação para PDF e Word.
 
 ## Arquitetura
 
@@ -46,7 +49,8 @@ Sem Supabase configurado o site abre normalmente; as telas de conta mostram que 
 ## Ativar o Supabase
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (região **South America (São Paulo)**).
-2. **SQL Editor** → cole e execute `supabase/migrations/20261012000000_fundacao.sql`.
+2. **SQL Editor** → execute, nesta ordem, os arquivos de `supabase/migrations/`:
+   `20261012000000_fundacao.sql`, `20261012010000_ferramentas.sql`, `20261012020000_busca_concursos.sql`.
    (Ou, com a CLI: `supabase link` e `supabase db push`.)
 3. **Project Settings → API**: copie *Project URL*, *anon key* e *service_role key* para as variáveis de ambiente.
 4. **Authentication → URL Configuration**
@@ -58,16 +62,23 @@ Sem Supabase configurado o site abre normalmente; as telas de conta mostram que 
    - *Reset password*: `{{ .SiteURL }}/auth/confirmar?token_hash={{ .TokenHash }}&type=recovery`
 7. **E-mail de produção**: o servidor de e-mail padrão do Supabase tem limite baixo de envios e é só para testes. Antes de abrir ao público, configure SMTP próprio em **Authentication → SMTP Settings** (ex.: Resend), com SPF, DKIM e DMARC no seu domínio.
 
-### Dar papel de administrador
+### Dar papel de editor ou administrador
 
 No SQL Editor (nunca pelo site):
 
 ```sql
 insert into public.user_roles (user_id, role)
-select id, 'admin' from auth.users where email = 'SEU-EMAIL';
+select id, 'admin' from auth.users where email = 'SEU-EMAIL';   -- ou 'editor'
 ```
 
-O painel administrativo chega na fase 4; o papel já fica registrado.
+Editores e administradores acessam **/editor/concursos** para cadastrar concursos. O painel administrativo completo chega na fase 4.
+
+### Cadastrar concursos
+
+1. Em `/editor/concursos`, crie um rascunho com os dados do edital (só o que estiver na fonte; o resto fica em branco).
+2. Confira o concurso na fonte oficial e **registre a verificação**.
+3. Publique. Sem verificação o banco recusa a publicação.
+4. Repita a verificação sempre que conferir de novo: se a última tiver mais de 7 dias, o concurso deixa de aparecer como “inscrições abertas” e passa a “aguardando nova verificação”.
 
 ## Publicar na Vercel
 
@@ -75,12 +86,18 @@ O painel administrativo chega na fase 4; o papel já fica registrado.
 2. Em *Environment Variables*, cadastre as variáveis do `.env.example` (a `SUPABASE_SERVICE_ROLE_KEY` **sem** o prefixo `NEXT_PUBLIC_`).
 3. Deploy. Depois, em *Settings → Domains*, adicione seu domínio e siga as instruções de DNS.
 4. Atualize `NEXT_PUBLIC_SITE_URL` e as URLs do Supabase (passo 4 acima) com o domínio final.
+5. Cadastre `CRON_SECRET` (gere com `openssl rand -hex 32`). O `vercel.json` agenda a verificação diária dos links úteis às 9h UTC; a Vercel envia o segredo automaticamente.
 
 ## Testes
 
 | O que | Onde | Como |
 |---|---|---|
 | RLS, papéis, plano protegido, exclusão em cascata | `tests/sql/rls_test.sql` | Postgres 16 com um esquema `auth` simulado (`tests/sql/supabase_stub.sql`) |
+| Concursos: publicação exige verificação, situação calculada, busca e filtros, privacidade de turmas e documentos | `tests/sql/fase2_test.sql` | Postgres 16 |
+| Caça-palavras, cruzadinha, códigos BNCC, situação de concurso | `tests/geradores.test.ts` | Vitest |
+| Versões de prova, gabarito, pendências | `tests/documentos.test.ts` | Vitest |
+| Exportação para Word (conteúdo conferido dentro do .docx) | `tests/docx.test.ts` | Vitest |
+| Verificador de links | `tests/link-check.test.ts` | Vitest |
 | Redirecionamento seguro, limitador, rotas protegidas, CSP | `tests/security.test.ts` | Vitest |
 | Busca global e mapa de áreas | `tests/search.test.ts` | Vitest |
 | Validação de formulários | `tests/validation.test.ts` | Vitest |
@@ -100,9 +117,26 @@ O painel administrativo chega na fase 4; o papel já fica registrado.
 - Política de Privacidade, Termos de Uso e Política de Cookies (versões iniciais, para revisão jurídica)
 - SEO base: metadados, `sitemap.xml`, `robots.txt`, canonical; páginas em construção marcadas como `noindex`
 
+**Concluído na Fase 2**
+- Concursos: busca com filtros (estado, região, área, escolaridade, tipo, contratação, modalidade, banca, salário, prazo, situação), página de detalhe com cargos, datas, fonte e histórico de verificações, botão “Acompanhar” e prazos no painel
+- Editor de concursos para editores: rascunho → verificação → publicação; exclusão com confirmação
+- Links úteis: 16 fontes oficiais conferidas manualmente em 12/10/2026, com verificação automática diária
+- Planos de aula (aula, semanal, mensal, sequência didática) com as 12 seções e conferência de formato, etapa e ano dos códigos da BNCC
+- Atividades: questões (múltipla escolha, V ou F, associação, discursiva), caça-palavras e cruzadinha gerados automaticamente
+- Avaliações: cabeçalho, pontuação, dificuldade, até 4 versões equivalentes, gabarito separado com resolução e critérios, fonte/tamanho/espaçamento, versão ampliada e econômica
+- Turmas, duplicar, excluir, salvar com Ctrl+S e aviso de alterações não salvas
+- Exportação: PDF pela página de impressão e Word (.docx) gerado no servidor
+
+**Ainda não incluído na Fase 2**
+- Alertas por e-mail de novos concursos e prazos (dependem do envio de e-mails, fase 4; a preferência já é salva)
+- Questões com imagens e tabelas (dependem do armazenamento de arquivos)
+- Textos oficiais das habilidades da BNCC dentro da plataforma: o professor copia do documento oficial; a plataforma confere o código
+- Coleta automática de concursos: o cadastro é manual e conferido, de propósito, até haver fontes com API ou termos de uso que permitam coleta
+
 **Depende de credenciais ou serviços externos**
 - Supabase (contas e banco) — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Exclusão automática de conta — `SUPABASE_SERVICE_ROLE_KEY`
+- Exclusão automática de conta e verificação de links — `SUPABASE_SERVICE_ROLE_KEY`
+- Rotina diária dos links — `CRON_SECRET` + Vercel Cron
 - E-mails de confirmação em volume — SMTP próprio no Supabase
 - Envio das notificações por e-mail — fase 4 (preferências já são salvas)
 
