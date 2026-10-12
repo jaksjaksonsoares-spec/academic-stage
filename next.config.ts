@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
+  // pdf.js carrega o próprio worker do disco no servidor; não deve ser empacotado.
+  serverExternalPackages: ["pdfjs-dist"],
+  experimental: { serverActions: { bodySizeLimit: "1mb" } },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

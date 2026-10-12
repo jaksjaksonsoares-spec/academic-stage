@@ -31,13 +31,13 @@ export const AREAS: Area[] = [
   {
     slug: "editais", title: "Central de editais", short: "Editais",
     description: "Envie um edital em PDF e receba datas, requisitos e conteúdos organizados, com referência às páginas.",
-    group: "Concursos", phase: 3, status: "em-construcao", icon: "document",
+    group: "Concursos", phase: 3, status: "disponivel", icon: "document",
     keywords: ["edital", "pdf", "requisitos", "cronograma", "conteúdo programático"],
   },
   {
     slug: "estudos", title: "Preparação para concursos", short: "Estudos",
     description: "Plano de estudos, revisões programadas, flashcards, simulados e histórico de desempenho.",
-    group: "Concursos", phase: 3, status: "em-construcao", icon: "calendar",
+    group: "Concursos", phase: 3, status: "disponivel", icon: "calendar",
     keywords: ["estudo", "cronograma", "simulado", "flashcard", "revisão", "LDB", "BNCC", "ECA"],
   },
   {
@@ -85,7 +85,7 @@ export const AREAS: Area[] = [
   {
     slug: "assistente", title: "Assistente pedagógico", short: "Assistente",
     description: "IA especializada em educação brasileira que separa fatos verificados de sugestões.",
-    group: "Carreira", phase: 3, status: "em-construcao", icon: "spark",
+    group: "Carreira", phase: 3, status: "disponivel", icon: "spark",
     keywords: ["IA", "assistente", "inteligência artificial", "ajuda"],
   },
 ];

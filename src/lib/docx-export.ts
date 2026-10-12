@@ -25,6 +25,7 @@ import {
   type Avaliacao,
   type Plano,
   type Questao,
+  type Texto,
   type TipoDocumento,
 } from "./documentos";
 
@@ -196,11 +197,20 @@ function avaliacaoDocx(titulo: string, a: Avaliacao, docId: string, versao: numb
 const TAMANHO: Record<string, number> = { "12": 24, "14": 28, "16": 32, "18": 36 };
 const FONTE: Record<string, string> = { sans: "Arial", serif: "Times New Roman", legivel: "Verdana" };
 
-export async function documentoParaDocx(args: { tipo: TipoDocumento; titulo: string; conteudo: Plano | Atividade | Avaliacao; docId: string; versao: number }): Promise<Buffer> {
+function textoDocx(titulo: string, t: Texto): Bloco[] {
+  return [
+    h(titulo, HeadingLevel.HEADING_1),
+    ...t.corpo.split(/\n{2,}/).map((par) => p(par)),
+    ...(t.origem === "assistente" ? [p("Conteúdo gerado com apoio de IA e revisado pelo(a) professor(a).", { size: 18 })] : []),
+  ];
+}
+
+export async function documentoParaDocx(args: { tipo: TipoDocumento; titulo: string; conteudo: Plano | Atividade | Avaliacao | Texto; docId: string; versao: number }): Promise<Buffer> {
   const { tipo, titulo, conteudo, docId, versao } = args;
   const children =
     tipo === "plano" ? planoDocx(titulo, conteudo as Plano)
     : tipo === "atividade" ? atividadeDocx(titulo, conteudo as Atividade, docId, versao)
+    : tipo === "texto" ? textoDocx(titulo, conteudo as Texto)
     : avaliacaoDocx(titulo, conteudo as Avaliacao, docId, versao);
 
   const lay = tipo === "avaliacao" ? (conteudo as Avaliacao).layout : null;

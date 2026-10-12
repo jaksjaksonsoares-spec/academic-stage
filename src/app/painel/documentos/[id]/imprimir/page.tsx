@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/lib/session";
-import { LETRAS, lerConteudo, type Atividade, type Avaliacao, type Plano, type TipoDocumento, gerarVersao } from "@/lib/documentos";
-import { AtividadeView, AvaliacaoView, GabaritoView, PlanoView } from "@/components/documento-render";
+import { LETRAS, lerConteudo, type Atividade, type Avaliacao, type Plano, type Texto, type TipoDocumento, gerarVersao } from "@/lib/documentos";
+import { AtividadeView, AvaliacaoView, GabaritoView, PlanoView, TextoView } from "@/components/documento-render";
 import { PrintButton } from "./print-button";
 
 export const metadata: Metadata = { title: "Imprimir", robots: { index: false } };
@@ -27,7 +27,7 @@ export default async function ImprimirPage({ params, searchParams }: { params: P
       <div className="no-print flex flex-wrap items-center gap-3 rounded-[var(--radius-card)] border border-[var(--line)] p-4">
         <Link href={`/painel/documentos/${doc.id}`} className="text-sm text-[var(--muted)] hover:underline">Voltar ao editor</Link>
         <div className="ml-auto flex flex-wrap items-center gap-3">
-          {tipo !== "plano" && (
+          {(tipo === "atividade" || tipo === "avaliacao") && (
             <Link href={`?versao=${versao}&gabarito=${comGabarito ? 0 : 1}`} className="text-sm font-bold text-[var(--action)] underline">
               {comGabarito ? "Imprimir sem gabarito" : "Incluir gabarito"}
             </Link>
@@ -38,6 +38,7 @@ export default async function ImprimirPage({ params, searchParams }: { params: P
       </div>
 
       {tipo === "plano" && <PlanoView titulo={doc.titulo} p={lerConteudo("plano", doc.conteudo) as Plano} />}
+      {tipo === "texto" && <TextoView titulo={doc.titulo} t={lerConteudo("texto", doc.conteudo) as Texto} />}
       {tipo === "atividade" && <AtividadeView titulo={doc.titulo} a={lerConteudo("atividade", doc.conteudo) as Atividade} docId={doc.id} versao={versao} comGabarito={comGabarito} />}
       {tipo === "avaliacao" && (() => {
         const a = lerConteudo("avaliacao", doc.conteudo) as Avaliacao;

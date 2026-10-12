@@ -3,7 +3,7 @@ import { AREAS, AREA_GROUPS, PHASE_LABEL } from "@/lib/areas";
 import { Spotlight } from "@/components/spotlight";
 import { Icon } from "@/components/icon";
 
-const CURRENT_PHASE = 2;
+const CURRENT_PHASE = 3;
 
 const PHASES: { n: 1 | 2 | 3 | 4 | 5; what: string }[] = [
   { n: 1, what: "Conta segura, painel pessoal, preferências e seus dados sob seu controle." },
@@ -113,7 +113,7 @@ export default function HomePage() {
               ["Fonte sempre visível", "Todo concurso e curso traz o link oficial e a data em que foi verificado pela última vez."],
               ["Nada inventado", "Sem vagas, salários, datas ou códigos da BNCC preenchidos por suposição. Se falta informação, mostramos que falta."],
               ["Seus dados, suas regras", "Exporte ou exclua sua conta a qualquer momento. Não pedimos dados de estudantes."],
-              ["IA com identificação", "Quando a IA chegar, o que for gerado por ela vem marcado e separado de fatos verificados."],
+              ["IA com identificação", "O que a IA escreve vem marcado como sugestão e separado de fatos verificáveis. Dados de estudantes não são enviados."],
             ].map(([t, d]) => (
               <div key={t}>
                 <dt className="font-bold">{t}</dt>

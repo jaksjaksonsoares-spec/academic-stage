@@ -7,7 +7,7 @@ import { requireUser } from "@/lib/session";
 import { SCHEMAS, TIPOS_DOCUMENTO, conteudoInicial, type TipoDocumento } from "@/lib/documentos";
 import type { FormState } from "@/lib/form-state";
 
-const tipoSchema = z.enum(["plano", "atividade", "avaliacao"]);
+const tipoSchema = z.enum(["plano", "atividade", "avaliacao", "texto"]);
 const uuid = z.string().uuid();
 
 /** Limite de documentos por conta no plano gratuito (configurável no futuro por plano). */
@@ -112,4 +112,22 @@ export async function excluirTurma(fd: FormData) {
   await supabase.from("turmas").delete().eq("id", id);
   revalidatePath("/painel/documentos");
   redirect("/painel/documentos");
+}
+
+/** Salva uma resposta do assistente como documento de texto editável. */
+export async function salvarRespostaIA(input: { titulo: string; corpo: string }): Promise<{ ok: boolean; id?: string; message?: string }> {
+  const { supabase } = await requireUser("/assistente");
+  const titulo = z.string().trim().min(1).max(160).safeParse(input.titulo);
+  const corpo = z.string().min(1).max(40000).safeParse(input.corpo);
+  if (!titulo.success || !corpo.success) return { ok: false, message: "Conteúdo inválido." };
+  const { count } = await supabase.from("documentos").select("id", { count: "exact", head: true });
+  if ((count ?? 0) >= LIMITE_DOCUMENTOS_GRATUITO) return { ok: false, message: "Limite de documentos atingido." };
+  const { data, error } = await supabase
+    .from("documentos")
+    .insert({ tipo: "texto", titulo: titulo.data, conteudo: { corpo: corpo.data, origem: "assistente" } })
+    .select("id")
+    .single();
+  if (error || !data) return { ok: false, message: "Não foi possível salvar." };
+  revalidatePath("/painel/documentos");
+  return { ok: true, id: data.id };
 }

@@ -38,6 +38,15 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
         .order("inscricao_fim", { ascending: true, nullsFirst: false })
     : { data: [] };
 
+  // Recomendação com base no estado informado no perfil (preferência explícita).
+  const { data: regiao } = profile?.uf
+    ? await supabase.rpc("buscar_concursos", { _ufs: [profile.uf], _limit: 6 })
+    : { data: null };
+  const idsRegiao = ((regiao ?? []) as { id: string }[]).map((r) => r.id).filter((id) => !favIds.includes(id)).slice(0, 3);
+  const { data: daRegiao } = idsRegiao.length
+    ? await supabase.from("concursos").select("id,slug,titulo,orgao,uf,fase,inscricao_inicio,inscricao_fim,ultima_verificacao_em").in("id", idsRegiao)
+    : { data: [] };
+
   const name = profile?.display_name || user.email?.split("@")[0] || "professor(a)";
   const interesses = profile?.interesses ?? [];
   const slugs = [...new Set(interesses.flatMap((i) => INTERESSE_PARA_AREAS[i] ?? []))];
@@ -92,6 +101,24 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
           </ul>
         )}
       </section>
+
+      {profile?.uf && daRegiao && daRegiao.length > 0 && (
+        <section aria-labelledby="regiao">
+          <h2 id="regiao" className="text-xl font-bold">Concursos em {profile.uf}</h2>
+          <p className="mt-1 text-sm text-[var(--muted)]">Sugeridos pelo estado do seu perfil.</p>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+            {daRegiao.map((c) => (
+              <li key={c.id}>
+                <Link href={`/concursos/${c.slug}`} className="lift block h-full rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface)] p-4">
+                  <SituacaoBadge situacao={situacaoDe(c)} />
+                  <span className="mt-2 block font-bold">{c.titulo}</span>
+                  <span className="block text-sm text-[var(--muted)]">{c.orgao}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <section aria-labelledby="salvos" className="rounded-[var(--radius-card)] border border-[var(--line)] p-6">

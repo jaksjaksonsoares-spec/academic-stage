@@ -118,17 +118,24 @@ export const avaliacaoSchema = z.object({
     .default({}),
 });
 
+export const textoSchema = z.object({
+  corpo: texto(40000),
+  origem: z.enum(["", "assistente"]).default(""),
+});
+
 export type Plano = z.infer<typeof planoSchema>;
 export type Atividade = z.infer<typeof atividadeSchema>;
 export type Avaliacao = z.infer<typeof avaliacaoSchema>;
-export type TipoDocumento = "plano" | "atividade" | "avaliacao";
+export type Texto = z.infer<typeof textoSchema>;
+export type TipoDocumento = "plano" | "atividade" | "avaliacao" | "texto";
 
-export const SCHEMAS = { plano: planoSchema, atividade: atividadeSchema, avaliacao: avaliacaoSchema } as const;
+export const SCHEMAS = { plano: planoSchema, atividade: atividadeSchema, avaliacao: avaliacaoSchema, texto: textoSchema } as const;
 
 export const TIPOS_DOCUMENTO: Record<TipoDocumento, { label: string; novo: string; rota: string }> = {
   plano: { label: "Plano de aula", novo: "Novo plano", rota: "planejamento" },
   atividade: { label: "Atividade", novo: "Nova atividade", rota: "atividades" },
   avaliacao: { label: "Avaliação", novo: "Nova avaliação", rota: "avaliacoes" },
+  texto: { label: "Texto", novo: "Novo texto", rota: "assistente" },
 };
 
 export function conteudoInicial<T extends TipoDocumento>(tipo: T): z.infer<(typeof SCHEMAS)[T]> {

@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { checarCodigoBncc, compativelComTurma } from "@/lib/bncc";
-import { LETRAS, TIPOS_DOCUMENTO, novoId, pendencias, type Atividade, type Avaliacao, type Plano, type TipoDocumento } from "@/lib/documentos";
-import { AtividadeView, AvaliacaoView, GabaritoView, PlanoView } from "@/components/documento-render";
+import { LETRAS, TIPOS_DOCUMENTO, novoId, pendencias, type Atividade, type Avaliacao, type Plano, type Texto, type TipoDocumento } from "@/lib/documentos";
+import { AtividadeView, AvaliacaoView, GabaritoView, PlanoView, TextoView } from "@/components/documento-render";
 import { Icon } from "@/components/icon";
 import { salvarDocumento } from "../actions";
 import { QuestoesEditor } from "./questoes-editor";
 
 type Turma = { id: string; nome: string };
 type Doc = { id: string; tipo: TipoDocumento; titulo: string; turma_id: string | null; updated_at: string };
-type Conteudo = Plano | Atividade | Avaliacao;
+type Conteudo = Plano | Atividade | Avaliacao | Texto;
 
 const label = "mb-1 block text-sm font-bold";
 
@@ -97,10 +97,18 @@ export function DocumentoEditor({ doc, conteudoInicial, turmas }: { doc: Doc; co
             {doc.tipo === "plano" && <PlanoForm p={conteudo as Plano} set={set} />}
             {doc.tipo === "atividade" && <AtividadeForm a={conteudo as Atividade} set={set} />}
             {doc.tipo === "avaliacao" && <AvaliacaoForm a={conteudo as Avaliacao} set={set} />}
+            {doc.tipo === "texto" && (
+              <label className="block">
+                <span className={label}>Conteúdo</span>
+                {(conteudo as Texto).origem === "assistente" && <span className="mb-1 block text-xs text-[var(--muted)]">Gerado com apoio de IA. Revise antes de usar.</span>}
+                <textarea rows={24} maxLength={40000} value={(conteudo as Texto).corpo} onChange={(e) => set<Texto>({ corpo: e.target.value })} className="field font-[family-name:var(--font-sans)]" />
+              </label>
+            )}
           </>
         ) : (
           <div className="space-y-8">
             {doc.tipo === "plano" && <PlanoView titulo={titulo} p={conteudo as Plano} />}
+            {doc.tipo === "texto" && <TextoView titulo={titulo} t={conteudo as Texto} />}
             {doc.tipo === "atividade" && <AtividadeView titulo={titulo} a={conteudo as Atividade} docId={doc.id} versao={0} comGabarito />}
             {doc.tipo === "avaliacao" && (
               <>
@@ -129,7 +137,7 @@ export function DocumentoEditor({ doc, conteudoInicial, turmas }: { doc: Doc; co
         </div>
         <p className="mt-3 text-sm text-[var(--muted)]">
           O PDF abre uma página pronta para impressão — escolha “Salvar como PDF” no destino da impressora.
-          {doc.tipo !== "plano" && " O gabarito vai em página separada."}
+          {(doc.tipo === "atividade" || doc.tipo === "avaliacao") && " O gabarito vai em página separada."}
         </p>
       </section>
     </div>

@@ -15,6 +15,7 @@ import {
   type Avaliacao,
   type Plano,
   type Questao,
+  type Texto,
 } from "@/lib/documentos";
 
 const PERIODICIDADE = { aula: "Plano de aula", semanal: "Plano semanal", mensal: "Plano mensal", sequencia: "Sequência didática" };
@@ -283,6 +284,18 @@ export function AvaliacaoView({ titulo, a, docId, versao }: { titulo: string; a:
       </header>
       {a.instrucoes && <p className="doc-instrucoes whitespace-pre-line">{a.instrucoes}</p>}
       <QuestoesView questoes={qs} salt={`${docId}:${versao}`} mostrarPontos />
+    </article>
+  );
+}
+
+/* ── Texto ────────────────────────────────────────────────────────── */
+
+export function TextoView({ titulo, t }: { titulo: string; t: Texto }) {
+  return (
+    <article className="doc">
+      <header className="doc-header"><h2>{titulo}</h2></header>
+      <div className="whitespace-pre-line">{t.corpo || <em>(sem conteúdo)</em>}</div>
+      {t.origem === "assistente" && <p className="doc-nota">Conteúdo gerado com apoio de IA e revisado pelo(a) professor(a).</p>}
     </article>
   );
 }

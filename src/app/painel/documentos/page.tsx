@@ -16,7 +16,7 @@ type Row = { id: string; tipo: TipoDocumento; titulo: string; turma_id: string |
 export default async function DocumentosPage({ searchParams }: { searchParams: Promise<{ tipo?: string; turma?: string; erro?: string; excluido?: string }> }) {
   const { supabase } = await requireUser("/painel/documentos");
   const sp = await searchParams;
-  const tipo = (["plano", "atividade", "avaliacao"] as const).find((t) => t === sp.tipo);
+  const tipo = (["plano", "atividade", "avaliacao", "texto"] as const).find((t) => t === sp.tipo);
 
   let q = supabase.from("documentos").select("id,tipo,titulo,turma_id,updated_at").order("updated_at", { ascending: false }).limit(300);
   if (tipo) q = q.eq("tipo", tipo);
@@ -60,7 +60,7 @@ export default async function DocumentosPage({ searchParams }: { searchParams: P
         <section aria-labelledby="lista">
           <h2 id="lista" className="sr-only">Lista de documentos</h2>
           <nav aria-label="Filtrar por tipo" className="mb-4 flex flex-wrap gap-2">
-            {[undefined, "plano", "atividade", "avaliacao"].map((t) => (
+            {[undefined, "plano", "atividade", "avaliacao", "texto"].map((t) => (
               <Link key={t ?? "todos"} href={filtro({ tipo: t })} aria-current={tipo === t ? "page" : undefined}
                 className={`rounded-full border px-4 py-1.5 text-sm font-bold ${tipo === t ? "border-[var(--action)] text-[var(--action)]" : "border-[var(--line)]"}`}>
                 {t ? TIPOS_DOCUMENTO[t as TipoDocumento].label : "Todos"}
