@@ -70,4 +70,13 @@ jobs:
           grep -E "error TS" tsc.log | head -20 | while IFS= read -r line; do echo "::error title=tsc::$line"; done
           exit $status
       - name: Auditoria de dependências (alto risco)
-        run: npm audit --omit=dev --audit-level=high
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --audit-level=high > audit.txt 2>&1
+          status=$?
+          npm ls next react @supabase/ssr --depth=0 | while IFS= read -r l; do echo "::notice title=versions::$l"; done
+          if [ $status -ne 0 ]; then
+            grep -E "^[a-z@]|Severity|fix available|GHSA|Depends on" audit.txt | head -20 | while IFS= read -r l; do echo "::error title=audit::$l"; done
+          fi
+          exit $status
