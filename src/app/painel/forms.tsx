@@ -128,7 +128,7 @@ export function NotificationsForm({ prefs }: { prefs: NotificationPrefs }) {
           <input type="checkbox" name="emailEnabled" defaultChecked={prefs.email_enabled} className="h-5 w-5 accent-[var(--action)]" />
           Por e-mail
         </label>
-        <p className="text-sm text-[var(--muted)]">O envio por e-mail começa quando o serviço de e-mail for ativado (fase 4). Sua escolha já fica salva.</p>
+        <p className="text-sm text-[var(--muted)]">Os avisos são preparados uma vez por dia. No resumo semanal, o e-mail chega às segundas-feiras.</p>
       </fieldset>
 
       <fieldset className="space-y-2">

@@ -26,6 +26,9 @@ export default function PrivacidadePage() {
         <li><strong>Preferências de notificação</strong> — para enviar só o que você escolheu. Base legal: execução de contrato.</li>
         <li><strong>Registros de segurança</strong> (tipo de evento e horário, como “entrada na conta”) — para prevenir fraudes e mostrar a você a atividade da conta. Não registramos endereço IP nesses registros. Base legal: legítimo interesse em segurança (art. 7º, IX) e cumprimento do Marco Civil da Internet quanto a registros de acesso, quando aplicável.</li>
         <li><strong>Registro de aceite dos Termos</strong> (versão e data) — para comprovar a aceitação. Base legal: exercício regular de direitos (art. 7º, VI).</li>
+        <li><strong>Solicitações de atendimento</strong> (nome, e-mail, mensagem e anexos enviados) — para responder ao pedido. Base legal: execução de contrato e, para visitantes sem conta, procedimentos preliminares a pedido do titular (art. 7º, V).</li>
+        <li><strong>Seus documentos, planos de estudo, flashcards e editais analisados</strong> — conteúdo que você cria, guardado para você usar. Os PDFs de editais são apagados logo após a análise; fica só o resultado.</li>
+        <li><strong>Mensagens ao assistente de IA</strong> — enviadas ao provedor de IA para gerar a resposta e não guardadas pela plataforma. Contamos apenas quantas mensagens você enviou no dia, para aplicar o limite de uso.</li>
       </ul>
 
       <h2>O que não fazemos</h2>
@@ -37,15 +40,17 @@ export default function PrivacidadePage() {
 
       <h2>Com quem compartilhamos</h2>
       <p>
-        Com operadores que viabilizam o serviço: [Supabase — banco de dados e autenticação, região [REGIÃO]] e [Vercel — hospedagem].
-        Esses fornecedores podem tratar dados fora do Brasil, com as salvaguardas do art. 33 da LGPD. Quando o envio de e-mails e o
-        assistente de IA forem ativados, esta lista será atualizada antes de qualquer dado ser compartilhado com eles.
+        Com operadores que viabilizam o serviço: Supabase (banco de dados, autenticação e arquivos, região [REGIÃO]), Vercel (hospedagem),
+        Resend (envio de e-mails) e Anthropic (assistente e análise de edital com IA — só o texto que você envia ou o PDF que você escolhe analisar).
+        Esses fornecedores podem tratar dados fora do Brasil, com as salvaguardas do art. 33 da LGPD.
       </p>
 
       <h2>Por quanto tempo guardamos</h2>
       <ul>
         <li>Dados da conta: enquanto ela existir. Ao excluir a conta, os dados são apagados imediatamente do banco principal; cópias de segurança são sobrescritas em até [PRAZO DE BACKUP] dias.</li>
         <li>Registros de segurança: até 180 dias.</li>
+        <li>Solicitações de atendimento e anexos: até 2 anos após o encerramento.</li>
+        <li>Notificações no site: até você apagá-las ou excluir a conta.</li>
       </ul>
 
       <h2>Seus direitos</h2>

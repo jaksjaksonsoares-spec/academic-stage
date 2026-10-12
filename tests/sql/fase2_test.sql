@@ -27,6 +27,8 @@ end $$;
 set role authenticated;
 select set_config('request.jwt.claim.sub', 'aaaaaaaa-0000-0000-0000-000000000001', false);
 select set_config('request.jwt.claim.role', 'authenticated', false);
+-- Editora com segundo fator concluído (a partir da Fase 4 o banco exige MFA).
+select set_config('request.jwt.claims', '{"aal":"aal2"}', false);
 
 -- 2. Editora cria concurso não publicado com cargo.
 insert into public.concursos (id, slug, titulo, orgao, esfera, uf, tipo_selecao, fase, edital_url, fonte_nome, fonte_url, inscricao_inicio, inscricao_fim)

@@ -8,6 +8,11 @@ import { slugify } from "@/lib/concursos";
 import { UFS } from "@/lib/validation";
 import type { FormState } from "@/lib/form-state";
 
+type Supa = Awaited<ReturnType<typeof requireEditor>>["supabase"];
+async function auditar(supabase: Supa, acao: string, alvoId: string, detalhes: Record<string, unknown> = {}) {
+  await supabase.rpc("registrar_auditoria", { _acao: acao, _alvo_tipo: "concurso", _alvo_id: alvoId, _detalhes: detalhes });
+}
+
 const url = z.string().trim().url("Informe um link completo, começando com https://").max(1000).refine((v) => /^https?:\/\//.test(v), "Use http ou https.");
 const optUrl = z.union([url, z.literal("")]).transform((v) => v || null);
 const optText = (max: number) => z.string().trim().max(max).transform((v) => v || null);
@@ -106,6 +111,7 @@ export async function salvarConcurso(_prev: FormState, fd: FormData): Promise<Fo
   const { error: cErr } = await supabase.from("concurso_cargos").insert(cargos.map((k) => ({ ...k, concurso_id: concursoId })));
   if (cErr) return { status: "error", message: `Concurso salvo, mas os cargos falharam: ${cErr.message}` };
 
+  await auditar(supabase, id ? "concurso_editado" : "concurso_criado", String(concursoId), { titulo: dados.titulo });
   revalidatePath("/concursos");
   revalidatePath("/editor/concursos");
   if (!id) redirect(`/editor/concursos/${concursoId}?criado=1`);
@@ -130,6 +136,7 @@ export async function registrarVerificacao(_prev: FormState, fd: FormData): Prom
     verificado_por: user.id,
   });
   if (error) return { status: "error", message: "Não foi possível registrar a verificação." };
+  await auditar(supabase, "concurso_verificado", parsed.data.id, { fonte_url: parsed.data.fonte_url });
   revalidatePath(`/editor/concursos/${parsed.data.id}`);
   revalidatePath("/concursos", "layout");
   return { status: "success", message: "Verificação registrada agora." };
@@ -140,6 +147,7 @@ export async function definirPublicacao(fd: FormData) {
   const id = z.string().uuid().parse(fd.get("id"));
   const publicar = fd.get("publicar") === "1";
   const { error } = await supabase.from("concursos").update({ publicado: publicar }).eq("id", id);
+  if (!error) await auditar(supabase, publicar ? "concurso_publicado" : "concurso_despublicado", id);
   revalidatePath("/concursos", "layout");
   revalidatePath(`/editor/concursos/${id}`);
   redirect(`/editor/concursos/${id}?${error ? "erro=publicacao" : publicar ? "publicado=1" : "despublicado=1"}`);
@@ -149,7 +157,8 @@ export async function excluirConcurso(fd: FormData) {
   const { supabase } = await requireEditor();
   const id = z.string().uuid().parse(fd.get("id"));
   if (fd.get("confirmar") !== "EXCLUIR") redirect(`/editor/concursos/${id}?erro=confirmacao`);
-  await supabase.from("concursos").delete().eq("id", id);
+  const { error } = await supabase.from("concursos").delete().eq("id", id);
+  if (!error) await auditar(supabase, "concurso_excluido", id);
   revalidatePath("/concursos", "layout");
   redirect("/editor/concursos?excluido=1");
 }

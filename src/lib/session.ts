@@ -33,12 +33,24 @@ export type NotificationPrefs = {
   topics: string[];
 };
 
-/** Acesso de editor: confere o papel no banco (a RLS confere de novo em cada escrita). */
-export async function requireEditor(nextPath = "/editor/concursos") {
+/**
+ * Acesso administrativo. O banco exige o segundo fator (aal2) para editores e
+ * administradores; quem tem o papel mas ainda não passou pelo MFA é levado
+ * para a tela de verificação. Quem não tem o papel recebe 404.
+ */
+async function requirePapel(rpc: "is_editor" | "is_admin", nextPath: string) {
   const { supabase, user } = await requireUser(nextPath);
-  const { data, error } = await supabase.rpc("is_editor");
-  if (error || data !== true) {
-    notFound();
-  }
-  return { supabase, user };
+  const { data, error } = await supabase.rpc(rpc);
+  if (!error && data === true) return { supabase, user };
+  const { data: temPapel } = await supabase.rpc("tem_papel_administrativo");
+  if (temPapel === true) redirect(`/admin/mfa?next=${encodeURIComponent(nextPath)}`);
+  notFound();
+}
+
+export function requireEditor(nextPath = "/editor/concursos") {
+  return requirePapel("is_editor", nextPath);
+}
+
+export function requireAdmin(nextPath = "/admin") {
+  return requirePapel("is_admin", nextPath);
 }

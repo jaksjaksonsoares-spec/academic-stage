@@ -33,6 +33,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -q -f tests/sql/rls_test.sql
           psql -v ON_ERROR_STOP=1 -q -f tests/sql/fase2_test.sql
           psql -v ON_ERROR_STOP=1 -q -f tests/sql/fase3_test.sql
+          psql -v ON_ERROR_STOP=1 -q -f tests/sql/fase4_test.sql
 
   app:
     name: Aplicação (tipos, testes e build)

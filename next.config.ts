@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
     "/editais": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
     "/editais/[id]": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
   },
-  experimental: { serverActions: { bodySizeLimit: "1mb" } },
+  experimental: { serverActions: { bodySizeLimit: "5mb" } },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

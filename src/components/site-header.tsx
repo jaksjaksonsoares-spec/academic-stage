@@ -8,7 +8,10 @@ import { Icon } from "./icon";
 import { signOut } from "@/app/(auth)/actions";
 
 export async function SiteHeader() {
-  const { user } = await getUser();
+  const { supabase, user } = await getUser();
+  const { count: naoLidas } = supabase && user
+    ? await supabase.from("notificacoes").select("id", { count: "exact", head: true }).is("lida_em", null)
+    : { count: 0 };
   const groups = AREA_GROUPS.map((g) => ({ group: g, items: AREAS.filter((a) => a.group === g) }));
 
   return (
@@ -58,6 +61,22 @@ export async function SiteHeader() {
             <Icon name="search" />
           </Link>
           <ThemeToggle />
+          {user && (
+            <Link
+              href="/painel/notificacoes"
+              aria-label={naoLidas ? `Notificações: ${naoLidas} não lidas` : "Notificações"}
+              className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-black/5 dark:hover:bg-white/10"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+              {!!naoLidas && (
+                <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-[var(--color-danger)] px-1 text-[0.65rem] font-bold leading-4 text-white">
+                  {naoLidas > 9 ? "9+" : naoLidas}
+                </span>
+              )}
+            </Link>
+          )}
 
           {user ? (
             <div className="hidden items-center gap-2 sm:flex">

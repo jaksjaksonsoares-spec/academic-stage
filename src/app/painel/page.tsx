@@ -47,6 +47,8 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
     ? await supabase.from("concursos").select("id,slug,titulo,orgao,uf,fase,inscricao_inicio,inscricao_fim,ultima_verificacao_em").in("id", idsRegiao)
     : { data: [] };
 
+  const { data: temPapel } = await supabase.rpc("tem_papel_administrativo");
+
   const name = profile?.display_name || user.email?.split("@")[0] || "professor(a)";
   const interesses = profile?.interesses ?? [];
   const slugs = [...new Set(interesses.flatMap((i) => INTERESSE_PARA_AREAS[i] ?? []))];
@@ -63,6 +65,13 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
           Este é o seu espaço. As ferramentas aparecem aqui conforme entram no ar.
         </p>
       </header>
+
+      {temPapel === true && (
+        <p className="rounded-[var(--radius-control)] border border-[var(--line)] p-4">
+          Você tem acesso administrativo. <Link href="/admin" className="font-bold text-[var(--action)] underline">Abrir administração</Link>
+          {" · "}<Link href="/editor/concursos" className="font-bold text-[var(--action)] underline">Editor de concursos</Link>
+        </p>
+      )}
 
       {!profile?.onboarding_completed_at && (
         <Callout icon="spark" title="Conte o que te interessa" action={{ href: "/boas-vindas", label: "Escolher interesses" }}>

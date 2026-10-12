@@ -20,12 +20,15 @@ function inicioDoDiaSaoPaulo(now = new Date()): string {
 }
 
 export async function consultarCota(supabase: SupabaseClient, userId: string, recurso: Recurso) {
-  const [{ data: perfil }, { count }] = await Promise.all([
+  const [{ data: perfil }, { count }, { data: config }] = await Promise.all([
     supabase.from("profiles").select("plan").eq("id", userId).single(),
     supabase.from("ia_uso").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("recurso", recurso).gte("created_at", inicioDoDiaSaoPaulo()),
+    supabase.from("config_plataforma").select("valor").eq("chave", "limites_ia").maybeSingle(),
   ]);
   const plano = ((perfil?.plan as Plano) in LIMITES_DIARIOS ? perfil?.plan : "gratuito") as Plano;
-  const limite = LIMITES_DIARIOS[plano][recurso];
+  // Valor configurado no painel administrativo; sem ele, vale o padrão do código.
+  const configurado = (config?.valor as Record<string, Record<string, unknown>> | undefined)?.[plano]?.[recurso];
+  const limite = typeof configurado === "number" && configurado >= 0 ? configurado : LIMITES_DIARIOS[plano][recurso];
   const usados = count ?? 0;
   return { limite, usados, restantes: Math.max(0, limite - usados) };
 }
