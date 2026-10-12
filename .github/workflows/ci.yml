@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  banco:
+    name: Banco de dados (migrações + RLS)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aplicar migrações e rodar testes de segurança do banco
+        run: |
+          psql -v ON_ERROR_STOP=1 -q -f tests/sql/supabase_stub.sql
+          for f in supabase/migrations/*.sql; do psql -v ON_ERROR_STOP=1 -q -f "$f"; done
+          psql -v ON_ERROR_STOP=1 -q -f tests/sql/rls_test.sql
+
+  app:
+    name: Aplicação (tipos, testes e build)
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SITE_URL: https://exemplo.academicstage.invalid
+      NEXT_PUBLIC_SUPABASE_URL: https://exemplo.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-ficticia-apenas-para-build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Testes unitários
+        run: npm test
+      - name: Build de produção (inclui verificação de tipos)
+        run: npm run build
+      - name: Verificação de tipos completa (inclui testes)
+        run: npm run typecheck
+      - name: Auditoria de dependências (alto risco)
+        run: npm audit --omit=dev --audit-level=high

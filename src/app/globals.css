@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+/* Tema escuro por classe (.dark no <html>), com padrão do sistema aplicado
+   antes da pintura pelo script de tema no layout. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  Sistema de tokens — AcademiC Stage
+  Conceito: o palco. Azul profundo como a sala, papel frio como a luz do dia,
+  turquesa como o refletor que ilumina o que importa.
+*/
+@theme {
+  --color-ink: #0a1a3f;        /* azul profundo — marca, títulos */
+  --color-midnight: #06102a;   /* fundo do palco e do tema escuro */
+  --color-paper: #f5f7fb;      /* fundo claro, frio */
+  --color-slate: #4f5b78;      /* texto secundário (AA sobre paper) */
+  --color-mist: #dde3ef;       /* bordas e divisórias claras */
+  --color-spot: #19d3c5;       /* refletor — destaque sobre fundo escuro */
+  --color-spot-deep: #0a7f77;  /* turquesa para texto/ação sobre fundo claro (AA) */
+  --color-violet: #7b5cff;     /* apoio em gradientes, uso mínimo */
+  --color-danger: #c2304a;
+  --color-success: #11795a;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-stage: 28px;
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  --shadow-lift: 0 1px 2px rgb(10 26 63 / 0.06), 0 12px 32px -12px rgb(10 26 63 / 0.22);
+  --shadow-float: 0 30px 60px -20px rgb(6 16 42 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+:root {
+  --bg: var(--color-paper);
+  --surface: #ffffff;
+  --text: var(--color-ink);
+  --muted: var(--color-slate);
+  --line: var(--color-mist);
+  --action: var(--color-spot-deep);
+  --action-text: #ffffff;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: var(--color-midnight);
+  --surface: #0d1a3a;
+  --text: #e9eefb;
+  --muted: #a3afcc;
+  --line: #1f2d52;
+  --action: var(--color-spot);
+  --action-text: var(--color-midnight);
+  color-scheme: dark;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+p { text-wrap: pretty; }
+
+/* Foco sempre visível para teclado */
+:focus-visible {
+  outline: 3px solid var(--color-spot);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  background: var(--color-spot);
+  color: var(--color-midnight);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-control);
+  font-weight: 700;
+}
+.skip-link:focus { top: 1rem; }
+
+/* Palco: o fundo do hero e das áreas de destaque */
+.stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgb(123 92 255 / 0.28), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgb(25 211 197 / 0.14), transparent 60%),
+    linear-gradient(180deg, #0a1a3f 0%, #06102a 100%);
+  color: #e9eefb;
+}
+
+/* Refletor que acompanha o ponteiro (posição via --spot-x / --spot-y) */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    520px circle at var(--spot-x, 70%) var(--spot-y, 35%),
+    rgb(25 211 197 / 0.18),
+    transparent 65%
+  );
+  transition: background-position 0.2s;
+}
+
+/* Linhas do piso do palco */
+.stage-floor {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 45%;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  transform: perspective(600px) rotateX(58deg);
+  transform-origin: bottom;
+  mask-image: linear-gradient(to top, black, transparent);
+}
+
+.layer {
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+
+/* Elevação suave apenas em dispositivos com ponteiro fino */
+@media (hover: hover) and (pointer: fine) {
+  .lift { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+  .lift:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+}
+
+/* Entrada orquestrada única do hero */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.24s; }
+.rise-4 { animation-delay: 0.4s; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { animation: spin 0.8s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .layer { transform: none !important; }
+}
+
+/* Campos de formulário consistentes */
+.field {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-control);
+  padding: 0.7rem 0.85rem;
+  font-size: 1rem;
+  transition: border-color 0.15s;
+}
+.field:hover { border-color: color-mix(in srgb, var(--line) 40%, var(--muted)); }
+.field:focus-visible { outline-offset: 1px; border-color: var(--action); }
+.field[aria-invalid="true"] { border-color: var(--color-danger); }
+
+.prose-legal h2 { font-size: 1.35rem; margin-top: 2.25rem; margin-bottom: 0.5rem; }
+.prose-legal p, .prose-legal li { color: var(--muted); max-width: 68ch; }
+.prose-legal ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
+.prose-legal li { margin: 0.25rem 0; }
