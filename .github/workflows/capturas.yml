@@ -1,0 +1,34 @@
+name: Capturas de tela
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  capturas:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - name: Instalar navegador
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Capturar páginas
+        run: |
+          npx next start -p 3000 &
+          npx wait-on -t 60000 http://localhost:3000 || sleep 15
+          node scripts/capturas.mjs
+      - name: Publicar no branch capturas
+        run: |
+          cd capturas
+          git init -q -b capturas
+          git add .
+          git -c user.name="ci" -c user.email="ci@users.noreply.github.com" commit -q -m "Capturas ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git" capturas
