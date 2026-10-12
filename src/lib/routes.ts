@@ -1,5 +1,5 @@
 /** Rotas que exigem sessão. Verificadas no middleware E novamente nas páginas. */
-export const PROTECTED_PREFIXES = ["/painel", "/boas-vindas", "/api/conta"];
+export const PROTECTED_PREFIXES = ["/painel", "/boas-vindas", "/api/conta", "/api/documentos", "/editor"];
 
 /** Rotas de autenticação: quem já está logado é levado ao painel. */
 export const AUTH_ONLY_PATHS = ["/entrar", "/cadastro"];

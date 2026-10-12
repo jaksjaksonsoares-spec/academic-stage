@@ -1,5 +1,5 @@
 import "server-only";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getUser } from "@/lib/supabase/server";
 
 /**
@@ -32,3 +32,13 @@ export type NotificationPrefs = {
   frequency: "imediata" | "diaria" | "semanal";
   topics: string[];
 };
+
+/** Acesso de editor: confere o papel no banco (a RLS confere de novo em cada escrita). */
+export async function requireEditor(nextPath = "/editor/concursos") {
+  const { supabase, user } = await requireUser(nextPath);
+  const { data, error } = await supabase.rpc("is_editor");
+  if (error || data !== true) {
+    notFound();
+  }
+  return { supabase, user };
+}

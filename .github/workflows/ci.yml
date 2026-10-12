@@ -31,6 +31,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -q -f tests/sql/supabase_stub.sql
           for f in supabase/migrations/*.sql; do psql -v ON_ERROR_STOP=1 -q -f "$f"; done
           psql -v ON_ERROR_STOP=1 -q -f tests/sql/rls_test.sql
+          psql -v ON_ERROR_STOP=1 -q -f tests/sql/fase2_test.sql
 
   app:
     name: Aplicação (tipos, testes e build)

@@ -25,7 +25,7 @@ export const AREAS: Area[] = [
   {
     slug: "concursos", title: "Concursos e seleções", short: "Concursos",
     description: "Busque concursos e processos seletivos da educação com fonte oficial e data de verificação.",
-    group: "Concursos", phase: 2, status: "em-construcao", icon: "trophy",
+    group: "Concursos", phase: 2, status: "disponivel", icon: "trophy",
     keywords: ["concurso", "vaga", "processo seletivo", "edital", "professor", "pedagogo", "banca"],
   },
   {
@@ -73,7 +73,7 @@ export const AREAS: Area[] = [
   {
     slug: "links", title: "Links úteis", short: "Links úteis",
     description: "Diretório de fontes oficiais — MEC, INEP, BNCC, Diário Oficial — com verificação periódica.",
-    group: "Recursos", phase: 2, status: "em-construcao", icon: "link",
+    group: "Recursos", phase: 2, status: "disponivel", icon: "link",
     keywords: ["MEC", "INEP", "BNCC", "diário oficial", "link", "fonte oficial"],
   },
   {
