@@ -43,19 +43,19 @@ export const AREAS: Area[] = [
   {
     slug: "planejamento", title: "Laboratório de planejamento", short: "Planejamento",
     description: "Monte planos de aula e sequências didáticas com habilidades da BNCC verificadas.",
-    group: "Sala de aula", phase: 2, status: "em-construcao", icon: "compass",
+    group: "Sala de aula", phase: 2, status: "disponivel", icon: "compass",
     keywords: ["plano de aula", "sequência didática", "BNCC", "habilidade", "planejamento"],
   },
   {
     slug: "atividades", title: "Criador de atividades", short: "Atividades",
     description: "Exercícios, caça-palavras, cruzadinhas, quizzes e projetos editáveis antes de exportar.",
-    group: "Sala de aula", phase: 2, status: "em-construcao", icon: "puzzle",
+    group: "Sala de aula", phase: 2, status: "disponivel", icon: "puzzle",
     keywords: ["atividade", "exercício", "caça-palavras", "cruzadinha", "quiz", "jogo"],
   },
   {
     slug: "avaliacoes", title: "Provas e avaliações", short: "Avaliações",
     description: "Editor de provas com gabarito separado, versões equivalentes e exportação para PDF e DOCX.",
-    group: "Sala de aula", phase: 2, status: "em-construcao", icon: "check",
+    group: "Sala de aula", phase: 2, status: "disponivel", icon: "check",
     keywords: ["prova", "avaliação", "gabarito", "rubrica", "teste"],
   },
   {

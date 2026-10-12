@@ -131,8 +131,8 @@ export const TIPOS_DOCUMENTO: Record<TipoDocumento, { label: string; novo: strin
   avaliacao: { label: "Avaliação", novo: "Nova avaliação", rota: "avaliacoes" },
 };
 
-export function conteudoInicial(tipo: TipoDocumento) {
-  return SCHEMAS[tipo].parse({});
+export function conteudoInicial<T extends TipoDocumento>(tipo: T): z.infer<(typeof SCHEMAS)[T]> {
+  return SCHEMAS[tipo].parse({}) as z.infer<(typeof SCHEMAS)[T]>;
 }
 
 /** Lê conteúdo salvo de forma tolerante: campos novos ganham valor padrão. */

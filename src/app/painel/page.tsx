@@ -3,6 +3,9 @@ import { requireUser, type Profile } from "@/lib/session";
 import { AREAS, PHASE_LABEL } from "@/lib/areas";
 import { Icon } from "@/components/icon";
 import { FormMessage } from "@/components/ui";
+import { SituacaoBadge } from "@/components/situacao-badge";
+import { situacaoDe } from "@/lib/concursos-query";
+import { formatData } from "@/lib/concursos";
 
 /** Liga cada interesse do onboarding às áreas que o atendem. */
 const INTERESSE_PARA_AREAS: Record<string, string[]> = {
@@ -20,11 +23,20 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
   const { supabase, user } = await requireUser();
   const sp = await searchParams;
 
-  const [{ data: profile }, { data: events }, { count: favCount }] = await Promise.all([
+  const [{ data: profile }, { data: events }, { data: favs }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id).single<Profile>(),
     supabase.from("security_events").select("event_type,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5),
-    supabase.from("favorites").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    supabase.from("favorites").select("item_id").eq("user_id", user.id).eq("item_type", "concurso"),
   ]);
+  const favIds = (favs ?? []).map((f) => f.item_id as string).filter((id) => /^[0-9a-f-]{36}$/.test(id));
+  const { data: acompanhados } = favIds.length
+    ? await supabase
+        .from("concursos")
+        .select("id,slug,titulo,orgao,uf,fase,inscricao_inicio,inscricao_fim,data_prova,ultima_verificacao_em")
+        .in("id", favIds)
+        .eq("publicado", true)
+        .order("inscricao_fim", { ascending: true, nullsFirst: false })
+    : { data: [] };
 
   const name = profile?.display_name || user.email?.split("@")[0] || "professor(a)";
   const interesses = profile?.interesses ?? [];
@@ -83,12 +95,26 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
 
       <div className="grid gap-6 md:grid-cols-2">
         <section aria-labelledby="salvos" className="rounded-[var(--radius-card)] border border-[var(--line)] p-6">
-          <h2 id="salvos" className="text-lg font-bold">Itens salvos</h2>
-          <p className="mt-2 text-[var(--muted)]">
-            {favCount
-              ? `${favCount} ${favCount === 1 ? "item salvo" : "itens salvos"}.`
-              : "Quando a busca de concursos e a biblioteca entrarem no ar, o que você salvar aparece aqui."}
-          </p>
+          <h2 id="salvos" className="text-lg font-bold">Concursos que você acompanha</h2>
+          {acompanhados && acompanhados.length > 0 ? (
+            <ul className="mt-3 space-y-3">
+              {acompanhados.map((c) => (
+                <li key={c.id}>
+                  <Link href={`/concursos/${c.slug}`} className="font-bold hover:underline">{c.titulo}</Link>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-[var(--muted)]">
+                    <SituacaoBadge situacao={situacaoDe(c)} />
+                    {c.inscricao_fim && <span>Inscrições até {formatData(c.inscricao_fim)}</span>}
+                    {c.data_prova && <span>· Prova em {formatData(c.data_prova)}</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-[var(--muted)]">
+              Toque em “Acompanhar” na página de um concurso para ver os prazos aqui.{" "}
+              <Link href="/concursos" className="font-bold text-[var(--action)] underline">Buscar concursos</Link>
+            </p>
+          )}
         </section>
 
         <section aria-labelledby="atividade" className="rounded-[var(--radius-card)] border border-[var(--line)] p-6">

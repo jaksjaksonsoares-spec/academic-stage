@@ -6,8 +6,9 @@ import { Icon } from "@/components/icon";
 
 export const dynamicParams = false;
 
+// Áreas disponíveis têm página própria; esta rota atende só as em construção.
 export function generateStaticParams() {
-  return AREAS.map((a) => ({ area: a.slug }));
+  return AREAS.filter((a) => a.status === "em-construcao").map((a) => ({ area: a.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ area: string }> }): Promise<Metadata> {
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ area: str
 
 export default async function AreaPage({ params }: { params: Promise<{ area: string }> }) {
   const area = getArea((await params).area);
-  if (!area) notFound();
+  if (!area || area.status === "disponivel") notFound();
 
   const related = AREAS.filter((a) => a.group === area.group && a.slug !== area.slug);
 

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/painel", label: "Visão geral" },
+  { href: "/painel/documentos", label: "Meus documentos" },
   { href: "/painel/perfil", label: "Perfil" },
   { href: "/painel/preferencias", label: "Interesses e notificações" },
   { href: "/painel/conta", label: "Conta e privacidade" },
@@ -13,10 +14,10 @@ const LINKS = [
 export function PainelNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Seções do painel" className="-mx-4 overflow-x-auto px-4 lg:mx-0 lg:px-0">
+    <nav aria-label="Seções do painel" className="no-print -mx-4 overflow-x-auto px-4 lg:mx-0 lg:px-0">
       <ul className="flex gap-1 lg:sticky lg:top-24 lg:flex-col">
         {LINKS.map((l) => {
-          const active = pathname === l.href;
+          const active = l.href === "/painel" ? pathname === l.href : pathname.startsWith(l.href);
           return (
             <li key={l.href}>
               <Link

@@ -190,3 +190,73 @@ p { text-wrap: pretty; }
 .prose-legal p, .prose-legal li { color: var(--muted); max-width: 68ch; }
 .prose-legal ul { list-style: disc; padding-left: 1.25rem; margin: 0.5rem 0; }
 .prose-legal li { margin: 0.25rem 0; }
+
+/* ── Documentos (pré-visualização e impressão) ─────────────────────── */
+.doc {
+  background: #fff;
+  color: #111827;
+  font-family: var(--font-sans);
+  font-size: 12pt;
+  line-height: 1.5;
+  padding: 2rem;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lift);
+}
+.doc h2 { font-size: 1.5em; font-weight: 800; }
+.doc h3 { font-size: 1.1em; font-weight: 700; margin: 1.1em 0 0.3em; font-family: var(--font-sans); letter-spacing: 0; }
+.doc-header, .doc-cabecalho { border-bottom: 2px solid #111827; padding-bottom: 0.75rem; margin-bottom: 1rem; }
+.doc-escola { font-weight: 700; text-transform: none; }
+.doc-identificacao { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; margin-top: 0.75rem; }
+.doc-identificacao span { flex: 1 1 12rem; border-bottom: 1px solid #6b7280; padding-bottom: 0.15rem; }
+.doc-instrucoes { background: #f3f4f6; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
+.doc-section ul { list-style: disc; padding-left: 1.25rem; }
+.doc-section ol { list-style: decimal; padding-left: 1.25rem; }
+.doc-questoes { list-style: none; padding: 0; }
+.doc-questao { margin-bottom: 1.25em; break-inside: avoid; }
+.doc-alternativas { list-style: lower-alpha; padding-left: 2rem; margin-top: 0.35rem; }
+.doc-alternativas li::marker { content: counter(list-item, lower-alpha) ") "; font-weight: 700; }
+.doc-vf { list-style: none; padding-left: 1rem; margin-top: 0.35rem; }
+.doc-assoc { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.35rem; }
+.doc-assoc ol { padding-left: 1.5rem; list-style: decimal; }
+.doc-assoc ol[type="a"] { list-style: lower-alpha; }
+.doc-linhas span { display: block; height: 1.9em; border-bottom: 1px solid #9ca3af; }
+.doc-pontos { color: #4b5563; font-size: 0.9em; }
+.doc-nota { margin-top: 1.5rem; font-size: 0.85em; color: #4b5563; }
+.doc-alerta { color: #b42318; font-size: 0.9em; }
+.doc-grade, .doc-cruz { border-collapse: collapse; margin: 0.5rem 0; }
+.doc-grade td { width: 1.9em; height: 1.9em; text-align: center; font-weight: 700; font-family: ui-monospace, monospace; border: 1px solid #d1d5db; }
+.doc-marcada { background: #fde68a; }
+.doc-cruz td { width: 2em; height: 2em; position: relative; text-align: center; font-weight: 700; }
+.doc-cruz-cel { border: 1.5px solid #111827; }
+.doc-cruz-num { position: absolute; top: 1px; left: 2px; font-size: 0.55em; font-weight: 400; }
+.doc-pistas { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+.doc-palavras { margin-top: 0.75rem; }
+.doc-gabarito table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+.doc-gabarito th, .doc-gabarito td { border: 1px solid #d1d5db; padding: 0.35rem 0.6rem; text-align: left; }
+.doc-gabarito ol { list-style: decimal; padding-left: 1.25rem; }
+
+/* Opções de layout da prova */
+.fonte-serif { font-family: Georgia, "Times New Roman", serif; }
+.fonte-legivel { font-family: var(--font-sans); letter-spacing: 0.02em; word-spacing: 0.08em; }
+.tam-12 { font-size: 12pt; } .tam-14 { font-size: 14pt; } .tam-16 { font-size: 16pt; } .tam-18 { font-size: 18pt; }
+.esp-compacto .doc-questao { margin-bottom: 0.6em; } .esp-compacto { line-height: 1.35; }
+.esp-amplo .doc-questao { margin-bottom: 2em; } .esp-amplo { line-height: 1.75; }
+.economica .doc-instrucoes { background: none; border: 1px solid #d1d5db; }
+.economica .doc-cabecalho { border-bottom-width: 1px; }
+
+@media (max-width: 640px) {
+  .doc { padding: 1.1rem; }
+  .doc-assoc, .doc-pistas { grid-template-columns: 1fr; }
+}
+
+@media print {
+  @page { margin: 15mm; }
+  html, body { background: #fff !important; }
+  body > header, body > footer, .skip-link, .no-print { display: none !important; }
+  main { padding: 0 !important; }
+  .doc { box-shadow: none; border-radius: 0; padding: 0; }
+  .doc-quebra { break-before: page; }
+  .print-wrap { max-width: none !important; padding: 0 !important; }
+  .painel-grid { display: block !important; padding: 0 !important; }
+  .print-wrap > * + * { break-before: page; }
+}
