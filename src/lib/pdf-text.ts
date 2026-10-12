@@ -17,7 +17,6 @@ export async function extrairTextoPorPagina(bytes: Uint8Array): Promise<string[]
   const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const task = getDocument({
     data: new Uint8Array(bytes), // pdf.js transfere o buffer; trabalha numa cópia
-    isEvalSupported: false,
     disableFontFace: true,
     useSystemFonts: false,
   });
