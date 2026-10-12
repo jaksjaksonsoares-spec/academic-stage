@@ -7,12 +7,15 @@ Cada fase termina com a aplicação funcionando e o CI verde. Áreas futuras apa
 - **Links úteis**: `links_uteis` + rota `/api/cron/verificar-links` agendada no `vercel.json`; um link só sai da lista após 3 falhas seguidas.
 - **Planejamento, atividades e avaliações**: `turmas` e `documentos` (conteúdo em JSON validado por Zod); PDF por página de impressão, Word gerado no servidor.
 
-## Fase 3 — Inteligência e personalização
-- Assistente de IA via rota no servidor (chave em variável de ambiente), com marcação de conteúdo gerado e fontes.
-- Leitura de editais em PDF com referência às páginas, revisão manual e "Transformar em plano de estudos".
-- Cronogramas, revisões espaçadas, flashcards e histórico de desempenho.
-- Tabela oficial das habilidades da BNCC (código e texto), importada do documento do MEC, para buscar e inserir habilidades sem copiar e colar.
-- Imagens e tabelas em questões, com armazenamento privado no Supabase Storage.
+## Fase 3 — Inteligência e personalização (concluída)
+- Central de editais (`editais_analises`, bucket temporário `editais`), análise por palavras-chave e com IA com citações de página.
+- Estudos (`planos_estudo`, `sessoes_estudo`), flashcards (`flashcards`), cotas de IA (`ia_uso`).
+- Assistente via `/api/assistente` com streaming; documentos do tipo `texto`.
+
+## Pendências levadas adiante
+- Tabela oficial das habilidades da BNCC (código e texto) importada do documento do MEC.
+- Imagens e tabelas em questões (Supabase Storage).
+- Banco de questões com licença para simulados.
 
 ## Fase 4 — Atendimento e administração
 - Formulário de suporte com protocolo, anexos verificados (tipo e tamanho, bucket privado), e-mail ao admin e confirmação ao usuário via Resend — só exibe "enviado" com confirmação do provedor.

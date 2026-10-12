@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
   // pdf.js carrega o próprio worker do disco no servidor; não deve ser empacotado.
   serverExternalPackages: ["pdfjs-dist"],
+  // O worker do pdf.js é carregado por import dinâmico; garante que vá junto no deploy.
+  outputFileTracingIncludes: {
+    "/editais": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+    "/editais/[id]": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
   experimental: { serverActions: { bodySizeLimit: "1mb" } },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
