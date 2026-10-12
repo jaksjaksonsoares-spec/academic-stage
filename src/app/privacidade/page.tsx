@@ -28,6 +28,9 @@ export default function PrivacidadePage() {
         <li><strong>Registro de aceite dos Termos</strong> (versão e data) — para comprovar a aceitação. Base legal: exercício regular de direitos (art. 7º, VI).</li>
         <li><strong>Solicitações de atendimento</strong> (nome, e-mail, mensagem e anexos enviados) — para responder ao pedido. Base legal: execução de contrato e, para visitantes sem conta, procedimentos preliminares a pedido do titular (art. 7º, V).</li>
         <li><strong>Seus documentos, planos de estudo, flashcards e editais analisados</strong> — conteúdo que você cria, guardado para você usar. Os PDFs de editais são apagados logo após a análise; fica só o resultado.</li>
+        <li><strong>Materiais que você compartilha na biblioteca</strong> — título, conteúdo, licença escolhida e o nome de autoria que você informar ficam visíveis publicamente (ou só para sua organização, se escolher) depois da moderação. Antes do envio verificamos se o conteúdo parece conter dados pessoais (CPF, telefone, e-mail etc.) e bloqueamos o envio nesses casos. Você pode remover seus materiais a qualquer momento; cópias que outras pessoas já fizeram ficam com elas, com a atribuição exigida pela licença. Base legal: execução de contrato, a seu pedido.</li>
+        <li><strong>Organizações (escolas e redes)</strong> — se você participa, os demais membros veem seu nome de exibição e a gestão vê também seu e-mail. Você pode sair quando quiser. Base legal: execução de contrato.</li>
+        <li><strong>Denúncias de materiais e interesse em planos</strong> — guardados para moderar a biblioteca e planejar os planos pagos. Não há cobrança nem dados de pagamento.</li>
         <li><strong>Mensagens ao assistente de IA</strong> — enviadas ao provedor de IA para gerar a resposta e não guardadas pela plataforma. Contamos apenas quantas mensagens você enviou no dia, para aplicar o limite de uso.</li>
       </ul>
 
@@ -51,12 +54,13 @@ export default function PrivacidadePage() {
         <li>Registros de segurança: até 180 dias.</li>
         <li>Solicitações de atendimento e anexos: até 2 anos após o encerramento.</li>
         <li>Notificações no site: até você apagá-las ou excluir a conta.</li>
+        <li>Materiais compartilhados: até você removê-los ou excluir a conta (a exclusão da conta os retira da biblioteca). Se você for a única pessoa na gestão de uma organização, a gestão passa ao membro mais antigo; sem outros membros, a organização é excluída.</li>
       </ul>
 
       <h2>Seus direitos</h2>
       <p>
         Você pode, a qualquer momento: confirmar e acessar seus dados, corrigi-los (em <Link href="/painel/perfil">Perfil</Link>),
-        baixá-los em formato portável e excluir a conta (em <Link href="/painel/conta">Conta e privacidade</Link>). Para outros
+        baixá-los em formato portável (incluindo documentos, estudos, materiais compartilhados e organizações) e excluir a conta (em <Link href="/painel/conta">Conta e privacidade</Link>). Para outros
         pedidos — como informação sobre compartilhamento ou revisão de decisões automatizadas — use o canal de suporte. Você também
         pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).
       </p>

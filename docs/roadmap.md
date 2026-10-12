@@ -22,12 +22,20 @@ Cada fase termina com a aplicação funcionando e o CI verde. Áreas futuras apa
 - MFA (aal2) exigido no banco para `is_editor()` e `is_admin()`; `auditoria`, `erros_app`, `config_plataforma`, `notificacoes`.
 - Rotinas: `/api/cron/verificar-links` e `/api/cron/notificacoes`; monitoramento em `/api/saude`.
 
-## Fase 5 — Expansão
-- Biblioteca colaborativa com licença por item, formação continuada, núcleo de inclusão, planos profissional e institucional com provedor de pagamento.
+## Fase 5 — Expansão (concluída)
+- Organizações (`organizacoes`, `org_membros`, `org_convites`), `plano_efetivo()`, `interesse_planos`, limites em `config_plataforma` (`limites_ia`, `limites_planos`).
+- Biblioteca (`recursos`, `recurso_denuncias`, `colecoes`, `colecao_itens`) com moderação garantida por gatilho no banco.
+- Formação (`cursos`, publicação exige verificação). Inclusão sem tabela própria: modelos viram documentos do usuário.
+
+## Próximos passos sugeridos
+- Integrar um provedor de pagamento (webhook → plano do perfil ou da organização) quando houver preços e empresa constituída.
+- Envio de arquivos na biblioteca (bucket privado + verificação de tipo e de direitos).
+- Testes ponta a ponta com Playwright e auditoria de acessibilidade (axe) no CI.
+- Importar a tabela oficial da BNCC; banco de questões licenciado para simulados.
 
 ## Rotina de manutenção
-- **Diário**: olhar /admin (atendimentos abertos, concursos a verificar, links fora do ar, falhas).
+- **Diário**: olhar /admin (atendimentos abertos, concursos a verificar, links fora do ar, falhas) e /editor/biblioteca (materiais em revisão e denúncias).
 - **Semanal**: revisar o resultado do `npm audit` no CI; aplicar atualizações de segurança do Next.js e do Supabase.
-- **Mensal**: conferir backups do Supabase (o plano gratuito não tem backup diário — avaliar o plano pago antes de abrir ao público); rodar `select public.purge_old_security_events();` (falhas técnicas são limpas pela rotina de notificações) ou agendar com `pg_cron`.
+- **Mensal**: revisar cursos com inscrição encerrada em /editor/cursos; conferir backups do Supabase (o plano gratuito não tem backup diário — avaliar o plano pago antes de abrir ao público); rodar `select public.purge_old_security_events();` (falhas técnicas são limpas pela rotina de notificações) ou agendar com `pg_cron`.
 - **A cada mudança de política**: subir a versão em `TERMS_VERSION` (`src/lib/form-state.ts`) e avisar os usuários.
 - **Antes de publicar**: preencher os campos entre colchetes nas páginas legais e submetê-las a revisão jurídica.

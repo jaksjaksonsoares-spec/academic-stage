@@ -70,6 +70,8 @@ export default async function PainelPage({ searchParams }: { searchParams: Promi
         <p className="rounded-[var(--radius-control)] border border-[var(--line)] p-4">
           Você tem acesso administrativo. <Link href="/admin" className="font-bold text-[var(--action)] underline">Abrir administração</Link>
           {" · "}<Link href="/editor/concursos" className="font-bold text-[var(--action)] underline">Editor de concursos</Link>
+          {" · "}<Link href="/editor/biblioteca" className="font-bold text-[var(--action)] underline">Moderação da biblioteca</Link>
+          {" · "}<Link href="/editor/cursos" className="font-bold text-[var(--action)] underline">Cursos</Link>
         </p>
       )}
 

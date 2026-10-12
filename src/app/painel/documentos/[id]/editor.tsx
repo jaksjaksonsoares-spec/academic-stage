@@ -136,7 +136,8 @@ export function DocumentoEditor({ doc, conteudoInicial, turmas }: { doc: Doc; co
           ))}
         </div>
         <p className="mt-3 text-sm text-[var(--muted)]">
-          O PDF abre uma página pronta para impressão — escolha “Salvar como PDF” no destino da impressora.
+          <a href={`/biblioteca/compartilhar?documento=${doc.id}`} className="font-bold text-[var(--action)] underline">Compartilhar na biblioteca</a>
+          {" · "}O PDF abre uma página pronta para impressão — escolha “Salvar como PDF” no destino da impressora.
           {(doc.tipo === "atividade" || doc.tipo === "avaliacao") && " O gabarito vai em página separada."}
         </p>
       </section>

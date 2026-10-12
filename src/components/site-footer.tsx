@@ -38,6 +38,7 @@ export function SiteFooter() {
         <nav aria-label="Institucional">
           <h2 className="mb-3 font-bold text-white">Institucional</h2>
           <ul className="space-y-2 text-[#a3afcc]">
+            <li><Link href="/planos" className="hover:text-white">Planos</Link></li>
             <li><Link href="/suporte" className="hover:text-white">Suporte</Link></li>
             <li><Link href="/privacidade" className="hover:text-white">Política de Privacidade</Link></li>
             <li><Link href="/termos" className="hover:text-white">Termos de Uso</Link></li>

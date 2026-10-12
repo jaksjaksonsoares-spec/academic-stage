@@ -6,7 +6,7 @@ import { criarDocumento, duplicarDocumento, excluirDocumento, excluirTurma } fro
 import { TurmaForm } from "./turma-form";
 
 const ERROS: Record<string, string> = {
-  limite: "Você chegou ao limite de documentos do plano gratuito. Exclua documentos antigos para criar novos.",
+  limite: "Você chegou ao limite de documentos do seu plano. Exclua documentos antigos para criar novos ou veja os planos disponíveis.",
   criar: "Não foi possível criar o documento. Tente de novo.",
   duplicar: "Não foi possível duplicar o documento.",
 };

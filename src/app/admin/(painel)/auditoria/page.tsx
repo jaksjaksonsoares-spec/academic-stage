@@ -16,6 +16,18 @@ const ACOES: Record<string, string> = {
   concurso_publicado: "Concurso publicado",
   concurso_despublicado: "Concurso despublicado",
   concurso_excluido: "Concurso excluído",
+  recurso_publicado: "Material aprovado",
+  recurso_recusado: "Material recusado",
+  recurso_arquivado: "Material retirado",
+  recurso_curado: "Recurso indicado (curadoria)",
+  curso_salvo: "Curso salvo",
+  curso_verificado: "Curso verificado",
+  curso_publicado: "Curso publicado",
+  curso_despublicado: "Curso despublicado",
+  curso_excluido: "Curso excluído",
+  plano_definido: "Plano de usuário definido",
+  plano_org_ativado: "Plano institucional ativado",
+  plano_org_desativado: "Plano institucional desativado",
 };
 
 export default async function AuditoriaPage() {

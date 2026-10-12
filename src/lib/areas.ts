@@ -61,14 +61,14 @@ export const AREAS: Area[] = [
   {
     slug: "inclusao", title: "Inclusão e acessibilidade", short: "Inclusão",
     description: "Adaptação de atividades por barreiras observadas, sem exigir diagnósticos ou dados de estudantes.",
-    group: "Sala de aula", phase: 5, status: "em-construcao", icon: "heart",
+    group: "Sala de aula", phase: 5, status: "disponivel", icon: "heart",
     keywords: ["inclusão", "educação especial", "adaptação", "acessibilidade", "PEI", "AEE"],
   },
   {
     slug: "biblioteca", title: "Biblioteca de recursos", short: "Biblioteca",
-    description: "Materiais com fonte e licença identificadas, favoritos e coleções pessoais.",
-    group: "Recursos", phase: 5, status: "em-construcao", icon: "book",
-    keywords: ["biblioteca", "material", "recurso", "documento", "legislação"],
+    description: "Materiais compartilhados por professores e curadoria, com autoria, licença e moderação; coleções pessoais.",
+    group: "Recursos", phase: 5, status: "disponivel", icon: "book",
+    keywords: ["biblioteca", "material", "recurso", "compartilhar", "coleção", "licença"],
   },
   {
     slug: "links", title: "Links úteis", short: "Links úteis",
@@ -78,9 +78,15 @@ export const AREAS: Area[] = [
   },
   {
     slug: "formacao", title: "Formação e carreira", short: "Formação",
-    description: "Cursos, especializações e bolsas, com a diferença entre livre, extensão, lato e stricto sensu.",
-    group: "Carreira", phase: 5, status: "em-construcao", icon: "cap",
+    description: "Cursos, especializações, eventos e bolsas verificados, com a diferença entre livre, extensão, lato e stricto sensu.",
+    group: "Carreira", phase: 5, status: "disponivel", icon: "cap",
     keywords: ["curso", "especialização", "pós-graduação", "mestrado", "bolsa", "formação continuada"],
+  },
+  {
+    slug: "instituicao", title: "Escolas e redes", short: "Escolas",
+    description: "Organização da escola ou rede: biblioteca interna, modelos institucionais e gestão de membros.",
+    group: "Recursos", phase: 5, status: "disponivel", icon: "user",
+    keywords: ["escola", "rede", "coordenação", "gestão", "instituição", "equipe"],
   },
   {
     slug: "assistente", title: "Assistente pedagógico", short: "Assistente",

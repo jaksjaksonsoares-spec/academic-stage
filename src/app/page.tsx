@@ -3,7 +3,7 @@ import { AREAS, AREA_GROUPS, PHASE_LABEL } from "@/lib/areas";
 import { Spotlight } from "@/components/spotlight";
 import { Icon } from "@/components/icon";
 
-const CURRENT_PHASE = 3;
+const CURRENT_PHASE = 5;
 
 const PHASES: { n: 1 | 2 | 3 | 4 | 5; what: string }[] = [
   { n: 1, what: "Conta segura, painel pessoal, preferências e seus dados sob seu controle." },

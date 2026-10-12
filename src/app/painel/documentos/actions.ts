@@ -6,19 +6,17 @@ import { z } from "zod";
 import { requireUser } from "@/lib/session";
 import { SCHEMAS, TIPOS_DOCUMENTO, conteudoInicial, type TipoDocumento } from "@/lib/documentos";
 import type { FormState } from "@/lib/form-state";
+import { limiteDocumentos } from "@/lib/limites";
 
 const tipoSchema = z.enum(["plano", "atividade", "avaliacao", "texto"]);
 const uuid = z.string().uuid();
 
-/** Limite de documentos por conta no plano gratuito (configurável no futuro por plano). */
-const LIMITE_DOCUMENTOS_GRATUITO = 300;
 
 export async function criarDocumento(fd: FormData) {
   const tipo = tipoSchema.parse(fd.get("tipo"));
   const { supabase } = await requireUser(`/${TIPOS_DOCUMENTO[tipo].rota}`);
 
-  const { count } = await supabase.from("documentos").select("id", { count: "exact", head: true });
-  if ((count ?? 0) >= LIMITE_DOCUMENTOS_GRATUITO) redirect("/painel/documentos?erro=limite");
+  if ((await limiteDocumentos(supabase)).restantes <= 0) redirect("/painel/documentos?erro=limite");
 
   const turma = uuid.safeParse(fd.get("turma_id"));
   const { data, error } = await supabase
@@ -68,6 +66,7 @@ export async function salvarDocumento(input: { id: string; tipo: TipoDocumento; 
 export async function duplicarDocumento(fd: FormData) {
   const { supabase } = await requireUser("/painel/documentos");
   const id = uuid.parse(fd.get("id"));
+  if ((await limiteDocumentos(supabase)).restantes <= 0) redirect("/painel/documentos?erro=limite");
   const { data: orig } = await supabase.from("documentos").select("tipo,titulo,turma_id,conteudo").eq("id", id).single();
   if (!orig) redirect("/painel/documentos?erro=duplicar");
   const { data } = await supabase
@@ -120,8 +119,7 @@ export async function salvarRespostaIA(input: { titulo: string; corpo: string })
   const titulo = z.string().trim().min(1).max(160).safeParse(input.titulo);
   const corpo = z.string().min(1).max(40000).safeParse(input.corpo);
   if (!titulo.success || !corpo.success) return { ok: false, message: "Conteúdo inválido." };
-  const { count } = await supabase.from("documentos").select("id", { count: "exact", head: true });
-  if ((count ?? 0) >= LIMITE_DOCUMENTOS_GRATUITO) return { ok: false, message: "Limite de documentos atingido." };
+  if ((await limiteDocumentos(supabase)).restantes <= 0) return { ok: false, message: "Limite de documentos do seu plano atingido." };
   const { data, error } = await supabase
     .from("documentos")
     .insert({ tipo: "texto", titulo: titulo.data, conteudo: { corpo: corpo.data, origem: "assistente" } })

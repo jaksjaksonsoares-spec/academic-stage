@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/session";
 import { FormMessage } from "@/components/ui";
-import { definirPapel } from "../actions";
+import { definirPapel, definirPlano } from "../actions";
 
 type U = { id: string; email: string; display_name: string | null; plano: string | null; papeis: string[]; criado_em: string; ultimo_acesso: string | null; total: number };
 const POR_PAGINA = 50;
@@ -19,8 +19,8 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6">
       <h1 className="text-[clamp(1.9rem,4vw,2.5rem)] font-extrabold">Usuários e papéis</h1>
-      <p className="max-w-2xl text-[var(--muted)]">Editores cadastram e verificam concursos. Administradores acessam este painel. Os dois exigem verificação em dois fatores.</p>
-      {sp.ok && <FormMessage status="success" message="Papel atualizado e registrado na auditoria." />}
+      <p className="max-w-2xl text-[var(--muted)]">Editores cadastram e verificam concursos. Administradores acessam este painel. Os dois exigem verificação em dois fatores. O plano atribuído aqui não gera cobrança: use para pilotos e parcerias formalizadas.</p>
+      {sp.ok && <FormMessage status="success" message={sp.ok === "plano" ? "Plano atualizado e registrado na auditoria." : "Papel atualizado e registrado na auditoria."} />}
       {sp.erro && <FormMessage status="error" message={sp.erro === "confirmacao" ? "Marque a confirmação para remover o papel." : sp.erro} />}
 
       <form method="get" className="flex max-w-md gap-2" role="search">
@@ -31,9 +31,9 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Pro
       <p className="text-sm text-[var(--muted)]">{total} {total === 1 ? "usuário" : "usuários"}</p>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-left">
+        <table className="w-full min-w-[980px] text-left">
           <thead className="border-b-2 border-[var(--text)] text-sm">
-            <tr><th className="py-2 pr-4">Usuário</th><th className="py-2 pr-4">Cadastro</th><th className="py-2 pr-4">Último acesso</th><th className="py-2 pr-4">Papéis</th><th className="py-2">Alterar</th></tr>
+            <tr><th className="py-2 pr-4">Usuário</th><th className="py-2 pr-4">Cadastro</th><th className="py-2 pr-4">Último acesso</th><th className="py-2 pr-4">Plano</th><th className="py-2 pr-4">Papéis</th><th className="py-2">Alterar</th></tr>
           </thead>
           <tbody>
             {rows.map((u) => (
@@ -41,6 +41,16 @@ export default async function UsuariosPage({ searchParams }: { searchParams: Pro
                 <td className="py-3 pr-4"><span className="font-bold">{u.display_name || "—"}</span><span className="block text-sm text-[var(--muted)]">{u.email}</span></td>
                 <td className="py-3 pr-4 text-sm">{fmt(u.criado_em)}</td>
                 <td className="py-3 pr-4 text-sm">{fmt(u.ultimo_acesso)}</td>
+                <td className="py-3 pr-4 text-sm">
+                  <form action={definirPlano} className="flex gap-1">
+                    <input type="hidden" name="usuario" value={u.id} />
+                    <label className="sr-only" htmlFor={`plano-${u.id}`}>Plano de {u.email}</label>
+                    <select id={`plano-${u.id}`} name="plano" defaultValue={u.plano ?? "gratuito"} className="field w-36 py-1 text-sm">
+                      <option value="gratuito">Gratuito</option><option value="profissional">Profissional</option><option value="institucional">Institucional</option>
+                    </select>
+                    <button type="submit" className="rounded-lg border border-[var(--line)] px-2 font-bold">Salvar</button>
+                  </form>
+                </td>
                 <td className="py-3 pr-4 text-sm">{u.papeis.filter((p) => p !== "usuario").join(", ") || "usuário"}</td>
                 <td className="py-3 text-sm">
                   <div className="flex flex-wrap gap-2">

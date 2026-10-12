@@ -6,8 +6,9 @@ Fases concluídas:
 
 - **Fase 1 — Fundação**: identidade visual, navegação, banco com segurança por linha, autenticação completa, painel do usuário e direitos LGPD (exportar e excluir dados).
 - **Fase 2 — Ferramentas essenciais**: concursos com verificação na fonte oficial, links úteis com checagem diária, planos de aula, atividades e avaliações com exportação para PDF e Word.
-- **Fase 4 — Atendimento e administração**: suporte com protocolo e e-mail, painel administrativo com verificação em dois fatores, auditoria, notificações no site e por e-mail, registro de falhas e rota de saúde.
 - **Fase 3 — Inteligência e personalização**: central de editais (PDF ou link, com páginas citadas), planos de estudo com revisões espaçadas, flashcards, assistente pedagógico com IA e recomendações de concursos pela região.
+- **Fase 4 — Atendimento e administração**: suporte com protocolo e e-mail, painel administrativo com verificação em dois fatores, auditoria, notificações no site e por e-mail, registro de falhas e rota de saúde.
+- **Fase 5 — Expansão**: biblioteca colaborativa com licença, autoria e moderação; formação continuada com cursos conferidos; núcleo de inclusão; escolas e redes com biblioteca interna e convites; planos com limites configuráveis (sem cobrança ativa).
 
 ## Arquitetura
 
@@ -134,6 +135,8 @@ O atendimento e os avisos usam a [Resend](https://resend.com). Sem ela, as solic
 | Chamada à IA (cabeçalhos, streaming, erros), seções com páginas citadas, proteção contra SSRF | `tests/ia.test.ts` | Vitest com API simulada |
 | MFA obrigatório no banco, papéis, auditoria, suporte, configurações, notificações e lista de e-mails restrita | `tests/sql/fase4_test.sql` | Postgres 16 |
 | Protocolo, anexos pelo conteúdo, antispam, e-mail só “enviado” com id do provedor, escape de HTML, regras de notificação | `tests/fase4.test.ts` | Vitest com provedor simulado |
+| Organizações (gestor obrigatório, convites com hash, plano só pela administração), biblioteca (moderação, visibilidade por organização, licenças, denúncias, coleções), cursos só publicados após verificação, exclusão de conta sem bloqueio | `tests/sql/fase5_test.sql` | Postgres 16 |
+| Atribuição de licenças, filtros e busca da biblioteca, modelos de inclusão sem dados de estudantes, rotas e áreas | `tests/fase5.test.ts` | Vitest |
 | Redirecionamento seguro, limitador, rotas protegidas, CSP | `tests/security.test.ts` | Vitest |
 | Busca global e mapa de áreas | `tests/search.test.ts` | Vitest |
 | Validação de formulários | `tests/validation.test.ts` | Vitest |
@@ -191,6 +194,22 @@ O atendimento e os avisos usam a [Resend](https://resend.com). Sem ela, as solic
 - Notificações: avisos no site (sino no cabeçalho) e resumo por e-mail para prazos de inscrição (3 dias), provas (7 dias) e sessões de estudo do dia, conforme tópicos e frequência escolhidos
 - Registro automático de falhas do servidor e rota de saúde
 
+**Concluído na Fase 5**
+- Biblioteca colaborativa (/biblioteca): busca com filtros (tipo, etapa, componente, licença, origem), página de cada material com autoria, fonte, licença e texto de atribuição pronto; “copiar para meus documentos” já com a atribuição; favoritos, coleções pessoais e denúncia
+- Compartilhar um documento próprio (botão no editor): escolha de licença Creative Commons, público ou só para a organização, bloqueio automático se houver CPF, telefone, e-mail ou outro dado pessoal; todo material passa por moderação antes de aparecer
+- Moderação e curadoria (/editor/biblioteca, exige MFA): aprovar, recusar com motivo, arquivar, resolver denúncias e cadastrar materiais oficiais por link (a plataforma só aponta para a fonte, não hospeda conteúdo de terceiros)
+- Formação continuada (/formacao): cursos, especializações, eventos, bolsas e programas cadastrados por editores e publicados só depois de conferidos na página oficial; guia da diferença entre curso livre, extensão, lato e stricto sensu com links para e-MEC e Sucupira
+- Inclusão (/inclusao): modelos editáveis (PEI, rotina visual, registro de acompanhamento, roteiro de adaptação), estratégias de Desenho Universal para a Aprendizagem e “adaptar um documento meu”, sempre sem diagnóstico ou identificação de estudantes
+- Escolas e redes (/instituicao): criar organização, convites por link com validade e revogação (só o hash fica no banco), gestão de membros, biblioteca interna e modelos institucionais; a exclusão da conta passa a gestão ao membro mais antigo
+- Planos (/planos): Gratuito, Profissional e Institucional com limites de IA e de documentos lidos da configuração; “Tenho interesse” sem pedir pagamento. A administração atribui planos a pessoas (/admin/usuarios) e ativa o institucional em organizações (/admin/organizacoes), tudo auditado
+- Exportação de dados (LGPD) passa a incluir documentos, estudos, atendimentos, notificações, materiais, coleções e organizações
+
+**Ainda não incluído na Fase 5**
+- Cobrança: não há provedor de pagamento integrado nem preços definidos. Para vender, é preciso escolher um provedor (ex.: Stripe, Mercado Pago, Pagar.me), criar a conta da empresa, definir preços e nota fiscal, e então ligar o webhook do provedor à função `admin_definir_plano` (ou equivalente com a chave de serviço). Os limites já respeitam o plano de cada conta.
+- Envio de arquivos (PDF, imagens) para a biblioteca: hoje são compartilhados documentos criados na plataforma ou links para a fonte
+- Avaliações (estrelas/comentários) dos materiais e trilhas de cursos com certificado próprio
+- Parcerias: nenhuma parceria foi firmada; a estrutura de organizações e planos está pronta para quando houver
+
 **Depende de credenciais ou serviços externos**
 - Supabase (contas e banco) — `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Exclusão automática de conta e verificação de links — `SUPABASE_SERVICE_ROLE_KEY`
@@ -199,7 +218,7 @@ O atendimento e os avisos usam a [Resend](https://resend.com). Sem ela, as solic
 - E-mails do atendimento e das notificações — `RESEND_API_KEY`, `EMAIL_FROM`, `SUPPORT_EMAIL_TO` e domínio verificado (SPF, DKIM, DMARC)
 - Antispam do formulário — `FORM_SECRET`
 - E-mails de confirmação em volume — SMTP próprio no Supabase
-- Envio das notificações por e-mail — fase 4 (preferências já são salvas)
+- Cobrança dos planos pagos — provedor de pagamento (ainda não escolhido)
 
 **Limitações conhecidas**
 - O plano gratuito da Vercel permite até 2 rotinas agendadas diárias — exatamente as duas usadas.

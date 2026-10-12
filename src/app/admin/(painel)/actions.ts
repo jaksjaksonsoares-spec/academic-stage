@@ -27,6 +27,27 @@ export async function definirPapel(fd: FormData) {
   redirect(`/admin/usuarios?${error ? `erro=${encodeURIComponent(error.message.slice(0, 120))}` : "ok=papel"}`);
 }
 
+export async function definirPlano(fd: FormData) {
+  const { supabase } = await requireAdmin("/admin/usuarios");
+  const usuario = z.string().uuid().parse(fd.get("usuario"));
+  const plano = z.enum(["gratuito", "profissional", "institucional"]).parse(fd.get("plano"));
+  const { error } = await supabase.rpc("admin_definir_plano", { _usuario: usuario, _plano: plano });
+  revalidatePath("/admin/usuarios");
+  redirect(`/admin/usuarios?${error ? `erro=${encodeURIComponent(error.message.slice(0, 120))}` : "ok=plano"}`);
+}
+
+/* ── Organizações ─────────────────────────────────────────────────── */
+
+export async function definirPlanoOrganizacao(fd: FormData) {
+  const { supabase } = await requireAdmin("/admin/organizacoes");
+  const org = z.string().uuid().parse(fd.get("org"));
+  const ativo = fd.get("ativo") === "1";
+  if (!ativo && fd.get("confirmar") !== "on") redirect("/admin/organizacoes?erro=confirmacao");
+  const { error } = await supabase.rpc("admin_plano_organizacao", { _org: org, _ativo: ativo });
+  revalidatePath("/admin/organizacoes");
+  redirect(`/admin/organizacoes?${error ? "erro=falha" : "ok=1"}`);
+}
+
 /* ── Suporte ──────────────────────────────────────────────────────── */
 
 const respostaSchema = z.object({
@@ -116,25 +137,36 @@ export async function excluirLink(fd: FormData) {
 /* ── Configurações ────────────────────────────────────────────────── */
 
 const n = z.coerce.number().int().min(0).max(5000);
+const nd = z.coerce.number().int().min(0).max(100000);
 const limitesSchema = z.object({
-  gratuito_assistente: n, gratuito_edital: n,
-  profissional_assistente: n, profissional_edital: n,
-  institucional_assistente: n, institucional_edital: n,
+  gratuito_assistente: n, gratuito_edital: n, gratuito_documentos: nd,
+  profissional_assistente: n, profissional_edital: n, profissional_documentos: nd,
+  institucional_assistente: n, institucional_edital: n, institucional_documentos: nd,
 });
 
 export async function salvarLimites(_prev: FormState, fd: FormData): Promise<FormState> {
   const { supabase, user } = await requireAdmin("/admin/configuracoes");
   const p = limitesSchema.safeParse(Object.fromEntries(fd.entries()));
-  if (!p.success) return { status: "error", message: "Use números inteiros entre 0 e 5000." };
+  if (!p.success) return { status: "error", message: "Use números inteiros (IA: 0 a 5000; documentos: 0 a 100000)." };
   const v = p.data;
-  const valor = {
+  const ia = {
     gratuito: { assistente: v.gratuito_assistente, edital: v.gratuito_edital },
     profissional: { assistente: v.profissional_assistente, edital: v.profissional_edital },
     institucional: { assistente: v.institucional_assistente, edital: v.institucional_edital },
   };
-  const { error } = await supabase.from("config_plataforma").update({ valor, updated_at: new Date().toISOString(), updated_by: user.id }).eq("chave", "limites_ia");
-  if (error) return { status: "error", message: "Não foi possível salvar." };
-  await auditar(supabase, "config_alterada", "config", "limites_ia", valor);
+  const planos = {
+    gratuito: { documentos: v.gratuito_documentos },
+    profissional: { documentos: v.profissional_documentos },
+    institucional: { documentos: v.institucional_documentos },
+  };
+  const meta = { updated_at: new Date().toISOString(), updated_by: user.id };
+  const [r1, r2] = await Promise.all([
+    supabase.from("config_plataforma").update({ valor: ia, ...meta }).eq("chave", "limites_ia"),
+    supabase.from("config_plataforma").update({ valor: planos, ...meta }).eq("chave", "limites_planos"),
+  ]);
+  if (r1.error || r2.error) return { status: "error", message: "Não foi possível salvar." };
+  await auditar(supabase, "config_alterada", "config", "limites", { ia, planos });
   revalidatePath("/admin/configuracoes");
+  revalidatePath("/planos");
   return { status: "success", message: "Limites atualizados. Valem a partir da próxima solicitação." };
 }

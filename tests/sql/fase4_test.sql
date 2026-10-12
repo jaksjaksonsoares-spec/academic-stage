@@ -76,7 +76,7 @@ do $$ begin
   assert (select count(*) from public.auditoria) = 0, 'professor vê auditoria';
   assert (select count(*) from public.erros_app) = 0;
   update public.config_plataforma set valor = '{}' where chave = 'limites_ia';
-  assert (select valor -> 'gratuito' ->> 'assistente' from public.config_plataforma) = '10', 'professor alterou config';
+  assert (select valor -> 'gratuito' ->> 'assistente' from public.config_plataforma where chave = 'limites_ia') = '10', 'professor alterou config';
   begin
     perform public.registrar_auditoria('falsa', null, null, '{}');
     raise exception 'FALHA: professor registrou auditoria';

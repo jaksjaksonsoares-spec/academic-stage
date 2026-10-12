@@ -14,7 +14,7 @@ export function FavoriteButton({
   label = "Acompanhar",
   savedLabel = "Acompanhando",
 }: {
-  itemType: "concurso" | "link";
+  itemType: "concurso" | "link" | "material" | "curso";
   itemId: string;
   initialSaved: boolean;
   signedIn: boolean;

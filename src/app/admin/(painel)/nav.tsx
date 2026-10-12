@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/admin", label: "Visão geral" },
   { href: "/admin/suporte", label: "Atendimento" },
   { href: "/admin/usuarios", label: "Usuários e papéis" },
+  { href: "/admin/organizacoes", label: "Organizações e planos" },
   { href: "/admin/concursos", label: "Concursos" },
   { href: "/admin/links", label: "Links úteis" },
   { href: "/admin/erros", label: "Falhas técnicas" },

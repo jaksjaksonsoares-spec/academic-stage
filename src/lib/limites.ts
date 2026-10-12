@@ -20,12 +20,12 @@ function inicioDoDiaSaoPaulo(now = new Date()): string {
 }
 
 export async function consultarCota(supabase: SupabaseClient, userId: string, recurso: Recurso) {
-  const [{ data: perfil }, { count }, { data: config }] = await Promise.all([
-    supabase.from("profiles").select("plan").eq("id", userId).single(),
+  const [{ data: planoEf }, { count }, { data: config }] = await Promise.all([
+    supabase.rpc("plano_efetivo"),
     supabase.from("ia_uso").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("recurso", recurso).gte("created_at", inicioDoDiaSaoPaulo()),
     supabase.from("config_plataforma").select("valor").eq("chave", "limites_ia").maybeSingle(),
   ]);
-  const plano = ((perfil?.plan as Plano) in LIMITES_DIARIOS ? perfil?.plan : "gratuito") as Plano;
+  const plano = (typeof planoEf === "string" && planoEf in LIMITES_DIARIOS ? planoEf : "gratuito") as Plano;
   // Valor configurado no painel administrativo; sem ele, vale o padrão do código.
   const configurado = (config?.valor as Record<string, Record<string, unknown>> | undefined)?.[plano]?.[recurso];
   const limite = typeof configurado === "number" && configurado >= 0 ? configurado : LIMITES_DIARIOS[plano][recurso];
@@ -35,4 +35,19 @@ export async function consultarCota(supabase: SupabaseClient, userId: string, re
 
 export async function registrarUso(supabase: SupabaseClient, recurso: Recurso) {
   await supabase.from("ia_uso").insert({ recurso });
+}
+
+export const LIMITE_DOCUMENTOS_PADRAO = { gratuito: 300, profissional: 3000, institucional: 3000 } as const;
+
+/** Quantos documentos a pessoa ainda pode criar, pelo plano efetivo. */
+export async function limiteDocumentos(supabase: SupabaseClient) {
+  const [{ data: planoEf }, { data: config }, { count }] = await Promise.all([
+    supabase.rpc("plano_efetivo"),
+    supabase.from("config_plataforma").select("valor").eq("chave", "limites_planos").maybeSingle(),
+    supabase.from("documentos").select("id", { count: "exact", head: true }),
+  ]);
+  const plano = (typeof planoEf === "string" && planoEf in LIMITE_DOCUMENTOS_PADRAO ? planoEf : "gratuito") as keyof typeof LIMITE_DOCUMENTOS_PADRAO;
+  const conf = (config?.valor as Record<string, Record<string, unknown>> | undefined)?.[plano]?.documentos;
+  const limite = typeof conf === "number" && conf >= 0 ? conf : LIMITE_DOCUMENTOS_PADRAO[plano];
+  return { plano, limite, usados: count ?? 0, restantes: Math.max(0, limite - (count ?? 0)) };
 }
